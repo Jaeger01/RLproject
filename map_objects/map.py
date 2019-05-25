@@ -22,8 +22,8 @@ class Map:
             w = randint(room_min_size, room_max_size)
             h = randint(room_min_size, room_max_size)
             # Random position without going out of the boundaries of the map
-            x = randint(0, map_width - w - 1)
-            y = randint(0, map_height - h - 1)
+            x = randint(0, map_width - w - 5)
+            y = randint(0, map_height - h - 5)
 
             new_room = Rect(x, y, w, h)
 
