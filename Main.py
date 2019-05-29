@@ -5,8 +5,9 @@ from render_functions import *
 from map_objects.map import Map
 from game_states import GameStates
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_functions import *
-from game_messages import MessageLog
+from game_messages import *
 
 
 def main():
@@ -33,7 +34,9 @@ def main():
     fov_radius = 10
 
     fighter_component = Fighter(hp=30, defense_value=3, attack_value=5)
-    player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
+    inventory_component = Inventory(26)
+    player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
+                    fighter=fighter_component, inventory=inventory_component)
     entities = [player]
 
     # Sets font and initializes screen information
@@ -51,6 +54,7 @@ def main():
 
     # Initializes other game variables
     game_state = GameStates.PLAYERS_TURN
+    prev_game_state = game_state
     fov_recompute = True
     fov_map = initialize_fov(game_map)
     message_log = MessageLog(message_x, message_width, message_height)
@@ -70,7 +74,7 @@ def main():
 
         # Draws all entities, maps, and UI
         render_all(main_console, panel, entities, player, fov_map, fov_recompute, message_log, game_map, screen_width,
-                   screen_height, bar_width, panel_height, panel_y, colors)
+                   screen_height, bar_width, panel_height, panel_y, colors, game_state)
 
         fov_recompute = False  # Don't want to recompute unnecessarily
 
@@ -78,9 +82,14 @@ def main():
 
         clear_all(main_console, entities)
 
-        action = handle_keys(key)
+        # Action handling
+        action = handle_keys(key, game_state)
 
         move = action.get('move')
+        pickup = action.get('pickup')
+        show_inventory = action.get('show_inventory')
+        inventory_index = action.get('inventory_index')
+        drop_inventory = action.get('drop_inventory')
         exit = action.get('exit')
 
         # Does player turn
@@ -105,13 +114,46 @@ def main():
 
                 game_state = GameStates.ENEMY_TURN
 
+        # Handles pickups
+        elif pickup and game_state == GameStates.PLAYERS_TURN:
+            for entity in entities:
+                if entity.item and entity.x == player.x and entity.y == player.y:
+                    pickup_results = player.inventory.add_item(entity)
+                    player_turn_results.extend(pickup_results)
+
+                    break
+            else:
+                message_log.add_message(Message('There is nothing to get', libtcod.yellow))
+
+        if show_inventory:
+            prev_game_state = game_state
+            game_state = GameStates.SHOW_INVENTORY
+
+        if drop_inventory:
+            prev_game_state = game_state
+            game_state = GameStates.DROP_INVENTORY
+
+        if inventory_index is not None and prev_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
+                player.inventory.items):
+            item = player.inventory.items[inventory_index]
+            if game_state == GameStates.SHOW_INVENTORY:
+                player_turn_results.extend(player.inventory.use(item))
+            elif game_state == GameStates.DROP_INVENTORY:
+                player_turn_results.extend(player.inventory.drop_item(item))
+
         # Exits if exit
         if exit:
-            return True
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                game_state = prev_game_state
+            else:
+                return True
 
         for player_turn_result in player_turn_results:
             message = player_turn_result.get('message')
             dead_entity = player_turn_result.get('dead')
+            item_added = player_turn_result.get('item_added')
+            item_consumed = player_turn_result.get('consumed')
+            item_dropped = player_turn_result.get('item_dropped')
 
             if message:
                 message_log.add_message(message)
@@ -123,6 +165,18 @@ def main():
                     message = kill_monster(dead_entity)
 
                 message_log.add_message(message)
+
+            # Handles pickup/consume
+            if item_added:
+                entities.remove(item_added)
+                game_state = GameStates.ENEMY_TURN
+
+            if item_consumed:
+                game_state = GameStates.ENEMY_TURN
+
+            if item_dropped:
+                entities.append(item_dropped)
+                game_state == GameStates.ENEMY_TURN
 
         # Does enemy turn
         if game_state == GameStates.ENEMY_TURN:
@@ -156,6 +210,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-

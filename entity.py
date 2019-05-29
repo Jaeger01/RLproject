@@ -8,7 +8,8 @@ class Entity:
     Object representing players, monsters, items, etc.
     """
 
-    def __init__(self, x, y, char, color, name,  blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None):
+    def __init__(self, x, y, char, color, name,  blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
+                 inventory=None, item=None, ai=None):
         self.x = x
         self.y = y
         self.char = char
@@ -16,6 +17,8 @@ class Entity:
         self.name = name
         self.blocks = blocks
         self.fighter = fighter
+        self.item = item
+        self.inventory = inventory
         self.ai = ai
         self.render_order = render_order
 
@@ -24,6 +27,12 @@ class Entity:
 
         if self.ai:
             self.ai.owner = self
+
+        if self.item:
+            self.item.owner = self
+
+        if self.inventory:
+            self.inventory.owner = self
 
     def move(self, moveX, moveY):
         # Moves entity

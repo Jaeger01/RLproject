@@ -17,6 +17,12 @@ class Fighter:
             results.append({'dead': self.owner})
         return results
 
+    def heal(self, amount):
+        self.hp += amount
+
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+
     def attack(self, target):
         results = []
         damage = self.attack_value - target.fighter.defense_value
