@@ -14,6 +14,10 @@ class BasicMonster:
             elif target.fighter.hp > 0:
                 attack_results = monster.fighter.attack(target)
                 results.extend(attack_results)
+        # If monsters don't see you they just move in a random direction
+        else:
+            monster.wander(game_map, entities)
 
         return results
+
 

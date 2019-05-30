@@ -93,9 +93,8 @@ class Map:
         return False
 
     def place_entities(self, room, entities, max_monsters_per_room, max_items_per_room):
-        # Gets rand num of spoopy monsters
-        number_of_monsters = randint(0, max_monsters_per_room)
-        number_of_items = randint(0, max_items_per_room)
+        # Handles monster gen
+        number_of_monsters = randint(0, max_monsters_per_room)  # Gets rand num of spoopy monsters
 
         for i in range(number_of_monsters):
             # Choose random location in the room
@@ -111,14 +110,25 @@ class Map:
 
                 entities.append(monster)
 
+        # Handles item gen
+        number_of_items = randint(0, max_items_per_room)
+
         for i in range(number_of_items):
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                item_component = Item(use_function=heal, amount=4)
+                """item_component = Item(use_function=heal, amount=6)
                 item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
                               item=item_component)
+                item_component = Item(use_function=cast_lighting, damage=20, maximum_range=5)
+                item = Entity(x, y, '~', libtcod.yellow, 'Lighting Scroll', render_order=RenderOrder.ITEM,
+                              item=item_component)"""
 
+                item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
+                    'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
+                                      damage=15, radius=3)
+                item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
+                              item=item_component)
                 entities.append(item)
 

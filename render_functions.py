@@ -32,24 +32,23 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
 
                 if visible:
                     if wall:
-                        # libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
+                        #libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('light_wall'))
                         libtcod.console_set_char_background(console, x, y, colors.get('light_wall'), libtcod.BKGND_SET)
                     else:
-                        # libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
-                        libtcod.console_set_char_background(console, x, y, colors.get('light_ground'),
-                                                            libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('light_ground'))
+                        #libtcod.console_set_char_background(console, x, y, colors.get('light_ground'), libtcod.BKGND_SET)
 
                     map.tiles[x][y].explored = True
 
                 elif map.tiles[x][y].explored:
                     if wall:
-                        # libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
+                        #libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_wall'), libtcod.BKGND_SET)
                     else:
-                        # libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
-                        libtcod.console_set_char_background(console, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
+                        #libtcod.console_set_char_background(console, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
 
-    entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
+    entities_in_render_order = sorted(entities, key=lambda z: z.render_order.value)
     # Draws all entities in list and map
     for entity in entities_in_render_order:
         draw_entity(console, entity, fov_map)

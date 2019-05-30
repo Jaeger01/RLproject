@@ -1,6 +1,7 @@
 import math
 import tcod as libtcod
 from render_functions import RenderOrder
+from random import randint
 
 
 class Entity:
@@ -56,6 +57,20 @@ class Entity:
         moveY = other.y - self.y
         return math.sqrt(moveX ** 2 + moveY ** 2)
 
+    def distance(self, x, y):
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+
+    def wander(self, game_map, entities):
+        # Makes monsters move random direction
+        move_x = randint(-1, 1)
+        move_y = randint(-1, 1)
+        if not (game_map.is_blocked(self.x + move_x, self.y + move_y) or
+                get_blocking_entities_at_location(entities, self.x + move_x, self.y + move_y)):
+            self.x += move_x
+            self.y += move_y
+        else:  # If the tile is blocking recall until it finds a tile that isn't
+            self.wander(game_map, entities)
+
 
 def get_blocking_entities_at_location(entities, destination_x, destination_y):
     for entity in entities:
@@ -63,4 +78,5 @@ def get_blocking_entities_at_location(entities, destination_x, destination_y):
             return entity
 
     return None
+
 
