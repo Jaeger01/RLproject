@@ -3,13 +3,10 @@ from components import *
 from entity import *
 from game_states import *
 from menus import *
-from enum import Enum
+from render_order import RenderOrder
 
 
-class RenderOrder(Enum):
-    CORPSE = 1
-    ITEM = 2
-    ACTOR = 3
+
 
 
 colors = {
@@ -20,15 +17,15 @@ colors = {
 }
 
 
-def render_all(console, panel, entities, player, fov_map, fov_recompute, message_log, map, screen_width, screen_height, bar_width,
-               panel_height, panel_y, colors, game_state):
+def render_all(console, panel, entities, player, fov_map, fov_recompute, message_log, game_map, screen_width,
+               screen_height, bar_width, panel_height, panel_y, colors, game_state):
 
     if fov_recompute:
         # Draws tiles in game map
-        for y in range(map.height):
-            for x in range(map.width):
+        for y in range(game_map.height):
+            for x in range(game_map.width):
                 visible = libtcod.map_is_in_fov(fov_map, x, y)
-                wall = map.tiles[x][y].block_sight
+                wall = game_map.tiles[x][y].block_sight
 
                 if visible:
                     if wall:
@@ -38,9 +35,9 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
                         libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('light_ground'))
                         #libtcod.console_set_char_background(console, x, y, colors.get('light_ground'), libtcod.BKGND_SET)
 
-                    map.tiles[x][y].explored = True
+                    game_map.tiles[x][y].explored = True
 
-                elif map.tiles[x][y].explored:
+                elif game_map.tiles[x][y].explored:
                     if wall:
                         #libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_wall'), libtcod.BKGND_SET)

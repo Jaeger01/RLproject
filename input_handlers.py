@@ -55,6 +55,19 @@ def handle_player_turn(key):
     return {}
 
 
+def handle_main_menu(key):
+    key_char = chr(key.c)
+
+    if key_char == 'a':
+        return {'new_game': True}
+    elif key_char == 'b':
+        return {'load_game': True}
+    elif key_char == 'c':
+        return {'exit': True}
+
+    return {}
+
+
 def handle_targeting_mouse(mouse):
     (x, y) = (mouse.cx, mouse.cy)
 

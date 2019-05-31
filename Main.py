@@ -1,81 +1,105 @@
-#mport tcod as libtcod
 from input_handlers import *
-from entity import *
 from render_functions import *
-from map_objects.map import Map
-from game_states import GameStates
-from components.fighter import Fighter
-from components.inventory import Inventory
 from death_functions import *
 from game_messages import *
+from loader_functions.initialize_new_game import *
+from loader_functions.data_loaders import *
 
 
 def main():
+    constant_variables = get_constant_variables()
 
-    screen_width = 100
-    screen_height = 80
-
-    # UI variables
-    bar_width = 20
-    panel_height = 10
-    panel_y = screen_height - panel_height
-    message_x = bar_width + 2
-    message_width = screen_width - bar_width - 2
-    message_height = panel_height - 1
-
-    # Map variables
-    map_width = 100
-    map_height = 70
-    room_max_size = 15
-    room_min_size = 6
-    max_rooms = 30
-    max_monsters_per_room = 3
-    max_items_per_room = 20
-    fov_radius = 10
-
-    fighter_component = Fighter(hp=999, defense_value=3, attack_value=5)
-    inventory_component = Inventory(26)
-    player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
-                    fighter=fighter_component, inventory=inventory_component)
-    entities = [player]
-
-    # Sets font and initializes screen information
+    # Sets fonts root console
     libtcod.console_set_custom_font('arial12x12.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-    libtcod.console_init_root(screen_width, screen_height, 'RL Project', False, libtcod.RENDERER_SDL2)
+    libtcod.console_init_root(constant_variables['screen_width'], constant_variables['screen_height'],
+                              constant_variables['window_title'], False, libtcod.RENDERER_SDL2)
 
-    # Initializes new consoles
-    main_console = libtcod.console_new(screen_width, screen_height)
-    panel = libtcod.console_new(screen_width, panel_height)
+    # Initializes consoles
+    main_console = libtcod.console_new(constant_variables['screen_width'], constant_variables['screen_height'])
+    panel = libtcod.console_new(constant_variables['screen_width'], constant_variables['panel_height'])
 
-    # Initializes map
-    game_map = Map(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities,
-                      max_monsters_per_room, max_items_per_room)
+    player = None
+    entities = []
+    game_map = None
+    message_log = None
+    game_state = None
 
-    # Initializes other game variables
-    game_state = GameStates.PLAYERS_TURN
+    show_main_menu = True
+    show_load_error_message = False
+
+    main_menu_background_image = libtcod.image_load('menu_background.png')
+
+    key = libtcod.Key()
+    mouse = libtcod.Mouse()
+
+    while not libtcod.console_is_window_closed():
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
+
+        if show_main_menu:
+            main_menu(main_console, main_menu_background_image, constant_variables['screen_width'],
+                      constant_variables['screen_height'])
+
+            if show_load_error_message:
+                message_box(main_console, 'No save game to load', 40, constant_variables['screen_width'],
+                            constant_variables['screen_height'])
+
+            libtcod.console_flush()
+
+            action = handle_main_menu(key)
+
+            new_game = action.get('new_game')
+            load_saved_game = action.get('load_game')
+            exit_game = action.get('exit')
+
+            if show_load_error_message and (new_game or load_saved_game or exit_game):
+                show_load_error_message = False
+            elif new_game:
+                player, entities, game_map, game_state, message_log = get_game_variables(constant_variables)
+                game_state = GameStates.PLAYERS_TURN
+
+                show_main_menu = False
+            elif load_saved_game:
+                try:
+                    player, entities, game_map, message_log, game_state = load_game()
+                    show_main_menu = False
+                except FileNotFoundError:
+                    show_load_error_message = True
+            elif exit_game:
+                break
+
+        else:
+            libtcod.console_clear(main_console)
+            play_game(player, entities, game_map, message_log, game_state, main_console, panel, constant_variables)
+
+            show_main_menu = True
+
+
+def play_game(player, entities, game_map, message_log, game_state, main_console, panel, constant_variables):
+    # Initializes all main game variables
     prev_game_state = game_state
     fov_recompute = True
     fov_map = initialize_fov(game_map)
-    message_log = MessageLog(message_x, message_width, message_height)
     key = libtcod.Key()
     mouse = libtcod.Mouse()
     targeting_item = None
 
     # Game Loop
     while not libtcod.console_is_window_closed():
-        FPS = libtcod.sys_get_fps()
-        libtcod.console_print_ex(main_console, 0, 0, libtcod.BKGND_NONE, libtcod.LEFT, 'FPS: {0}'.format(FPS))
+        fps = libtcod.sys_get_fps()
+        libtcod.console_print_ex(main_console, 0, 0, libtcod.BKGND_NONE, libtcod.LEFT, 'FPS: {0}'.format(fps))
         # Captures events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
 
         # Computes fov
         if fov_recompute:
-            recompute_fov(fov_map, player.x, player.y, fov_radius)
+            recompute_fov(fov_map, player.x, player.y, constant_variables['fov_radius'])
 
         # Draws all entities, maps, and UI
-        render_all(main_console, panel, entities, player, fov_map, fov_recompute, message_log, game_map, screen_width,
-                   screen_height, bar_width, panel_height, panel_y, colors, game_state)
+        render_all(main_console, panel, entities, player, fov_map, fov_recompute, message_log, game_map,
+                   constant_variables['screen_width'],
+                   constant_variables['screen_height'], constant_variables['bar_width'],
+                   constant_variables['panel_height'],
+                   constant_variables['panel_y'], colors, game_state)
 
         fov_recompute = False  # Don't want to recompute unnecessarily
 
@@ -163,6 +187,7 @@ def main():
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
             else:
+                save_game(player, entities, game_map, message_log, game_state)
                 return True
 
         for player_turn_result in player_turn_results:
