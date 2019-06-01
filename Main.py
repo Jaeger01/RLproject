@@ -112,10 +112,12 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         mouse_action = handle_targeting_mouse(mouse)
 
         move = action.get('move')
+        wait = action.get('wait')
         pickup = action.get('pickup')
         show_inventory = action.get('show_inventory')
         inventory_index = action.get('inventory_index')
         drop_inventory = action.get('drop_inventory')
+        take_stairs = action.get('take_stairs')
         exit = action.get('exit')
 
         left_click = mouse_action.get('left_click')
@@ -154,6 +156,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             else:
                 message_log.add_message(Message('There is nothing to get', libtcod.yellow))
 
+        elif wait:
+            game_state = GameStates.ENEMY_TURN
+            message_log.add_message(start)
+
         if show_inventory:
             prev_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
@@ -179,6 +185,15 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 player_turn_results.extend(item_use_results)
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
+
+        if take_stairs and game_state == GameStates.PLAYERS_TURN:
+            for entity in entities:
+                if entity.stairs and entity.x == player.x and entity.y == player.y:
+                    entities = game_map.next_floor(player, message_log, constant_variables)
+                    fov_map = initialize_fov(game_map)
+                    fov_recompute = True
+                    libtcod.console_clear(main_console)
+                    break
 
         # Exits if exit
         if exit:

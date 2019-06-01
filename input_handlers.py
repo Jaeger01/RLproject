@@ -47,6 +47,12 @@ def handle_player_turn(key):
     if key_char == 'd':
         return {'drop_inventory': True}
 
+    if key.vk == libtcod.KEY_KPADD:
+        return {'take_stairs': True}
+
+    if key.vk == libtcod.KEY_SPACE:
+        return {'wait': True}
+
     if key.vk == libtcod.KEY_ESCAPE:
         # Exit
         return{'exit': True}

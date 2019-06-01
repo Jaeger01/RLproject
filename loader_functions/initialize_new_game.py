@@ -33,8 +33,8 @@ def get_constant_variables():
     fov_light_walls = True
     fov_radius = 10
 
-    max_monsters_per_room = 3
-    max_items_per_room = 2
+    """max_monsters_per_room = 3
+    max_items_per_room = 2"""
 
     constant_variables = {
         'window_title': window_title,
@@ -53,9 +53,7 @@ def get_constant_variables():
         'max_rooms': max_rooms,
         'fov_algorithm': fov_algorithm,
         'fov_light_walls': fov_light_walls,
-        'fov_radius': fov_radius,
-        'max_monsters_per_room': max_monsters_per_room,
-        'max_items_per_room': max_items_per_room,
+        'fov_radius': fov_radius
 
     }
 
@@ -73,8 +71,7 @@ def get_game_variables(constant_variables):
     game_map = Map(constant_variables['map_width'], constant_variables['map_height'])
     game_map.make_map(constant_variables['max_rooms'], constant_variables['room_min_size'],
                       constant_variables['room_max_size'],constant_variables['map_width'],
-                      constant_variables['map_height'], player, entities,
-                      constant_variables['max_monsters_per_room'], constant_variables['max_items_per_room'])
+                      constant_variables['map_height'], player, entities)
 
     # Initializes other game variables
     game_state = GameStates.PLAYERS_TURN

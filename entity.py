@@ -10,7 +10,7 @@ class Entity:
     """
 
     def __init__(self, x, y, char, color, name,  blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
-                 inventory=None, item=None, ai=None):
+                 inventory=None, item=None, ai=None, stairs=None):
         self.x = x
         self.y = y
         self.char = char
@@ -20,6 +20,7 @@ class Entity:
         self.fighter = fighter
         self.item = item
         self.inventory = inventory
+        self.stairs = stairs
         self.ai = ai
         self.render_order = render_order
 
@@ -34,6 +35,9 @@ class Entity:
 
         if self.inventory:
             self.inventory.owner = self
+
+        if self.stairs:
+            self.stairs.owner = self
 
     def move(self, moveX, moveY):
         # Moves entity
