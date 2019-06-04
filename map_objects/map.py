@@ -1,14 +1,16 @@
-import tcod as libtcod
 from entity import Entity
-from map_objects.tile import Tile
-from map_objects.rectangle import Rect
-from components.fighter import Fighter
-from components.item import Item
-from components.ai import *
-from components.stairs import Stairs
 from item_functions import *
 from render_functions import RenderOrder
-from random_utils import *
+
+from Engine.random_utils import *
+from components.ai import *
+from components.equipment import EquipmentSlots
+from components.equippable import Equippable
+from components.fighter import Fighter
+from components.item import Item
+from components.stairs import Stairs
+from map_objects.rectangle import Rect
+from map_objects.tile import Tile
 
 
 class Map:
@@ -119,7 +121,8 @@ class Map:
         item_chances = {
             'healing_potion': from_dungeon_level([[25, 4]], self.dungeon_level),
             'lighting_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[10, 2]], self.dungeon_level)
+            'fireball_scroll': from_dungeon_level([[20, 1]], self.dungeon_level),
+            'wand': from_dungeon_level([[100, 1]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):
@@ -132,19 +135,19 @@ class Map:
                 monster_choice = random_choice_from_dict(monster_chances)
 
                 if monster_choice == 'ashlee':
-                    monster_fight_comp = Fighter(hp=10, defense_value=3, attack_value=5)
+                    monster_fight_comp = Fighter(hp=10, armor_value=3, attack_value=5)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'A', libtcod.purple, "Ashlee", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
 
                 elif monster_choice == 'orc':
-                    monster_fight_comp = Fighter(hp=10, defense_value=4, attack_value=5)
+                    monster_fight_comp = Fighter(hp=10, armor_value=4, attack_value=5)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'O', libtcod.darkest_green, "Orc", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
 
                 elif monster_choice == 'goblin':
-                    monster_fight_comp = Fighter(hp=10, defense_value=2, attack_value=2)
+                    monster_fight_comp = Fighter(hp=10, armor_value=2, attack_value=2)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'G', libtcod.dark_green, "Goblin", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
@@ -176,6 +179,9 @@ class Map:
                                       damage=15, radius=3)
                     item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
+                elif item_choice == 'wand':
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
+                    item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
 
                 entities.append(item)
 

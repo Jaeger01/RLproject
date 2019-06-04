@@ -1,11 +1,13 @@
 import tcod as libtcod
-from components.fighter import Fighter
-from components.inventory import Inventory
 from entity import Entity
 from game_messages import MessageLog
-from game_states import GameStates
-from map_objects.map import Map
 from render_functions import RenderOrder
+
+from Engine.game_states import GameStates
+from components.equipment import Equipment
+from components.fighter import Fighter
+from components.inventory import Inventory
+from map_objects.map import Map
 
 
 def get_constant_variables():
@@ -33,9 +35,6 @@ def get_constant_variables():
     fov_light_walls = True
     fov_radius = 10
 
-    """max_monsters_per_room = 3
-    max_items_per_room = 2"""
-
     constant_variables = {
         'window_title': window_title,
         'screen_width': screen_width,
@@ -61,16 +60,17 @@ def get_constant_variables():
 
 
 def get_game_variables(constant_variables):
-    fighter_component = Fighter(hp=999, defense_value=3, attack_value=5)
+    fighter_component = Fighter(hp=999, armor_value=3, attack_value=5)
     inventory_component = Inventory(26)
+    equipment_component = Equipment()
     player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
-                    fighter=fighter_component, inventory=inventory_component)
+                    fighter=fighter_component, inventory=inventory_component, equipment=equipment_component)
     entities = [player]
 
     # Initializes map
     game_map = Map(constant_variables['map_width'], constant_variables['map_height'])
     game_map.make_map(constant_variables['max_rooms'], constant_variables['room_min_size'],
-                      constant_variables['room_max_size'],constant_variables['map_width'],
+                      constant_variables['room_max_size'], constant_variables['map_width'],
                       constant_variables['map_height'], player, entities)
 
     # Initializes other game variables

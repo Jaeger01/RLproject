@@ -1,9 +1,10 @@
-from input_handlers import *
-from render_functions import *
 from death_functions import *
 from game_messages import *
-from loader_functions.initialize_new_game import *
+from render_functions import *
+
+from Engine.input_handlers import *
 from loader_functions.data_loaders import *
+from loader_functions.initialize_new_game import *
 
 
 def main():
@@ -212,6 +213,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             item_consumed = player_turn_result.get('consumed')
             item_dropped = player_turn_result.get('item_dropped')
             targeting = player_turn_result.get('targeting')
+            equip = player_turn_result.get('equip')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
 
             if message:
@@ -245,6 +247,20 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 game_state = GameStates.TARGETING
                 targeting_item = targeting
                 message_log.add_message(targeting_item.item.targeting_message)
+
+            if equip:
+                equip_results = player.equipment.toggle_equip(equip)
+
+                for equip_result in equip_results:
+                    equipped = equip_result.get('equipped')
+                    dequipped = equip_result.get('dequipped')
+
+                    if equipped:
+                        message_log.add_message(Message('You equipped the {0}'.format(equipped.name)))
+                    if dequipped:
+                        message_log.add_message(Message('You dequipped the {0}'.format(dequipped.name)))
+
+                game_state = GameStates.ENEMY_TURN
 
         # Does enemy turn
         if game_state == GameStates.ENEMY_TURN:

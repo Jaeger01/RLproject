@@ -1,13 +1,7 @@
-import tcod as libtcod
-from components import *
 from entity import *
-from game_states import *
 from menus import *
-from render_order import RenderOrder
 
-
-
-
+from Engine.game_states import *
 
 colors = {
     'dark_wall': libtcod.Color(0, 0, 25),
@@ -62,6 +56,11 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         libtcod.console_print_ex(panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
         y += 1
 
+    for x_val in range(bar_width+1, int(message_log.width/2)):
+        libtcod.console_put_char(panel, x_val, 0, '*', libtcod.BKGND_NONE)
+    for y_val in range(0, panel.height):
+        libtcod.console_put_char(panel, int(message_log.width/2), y_val, '*', libtcod.BKGND_NONE)
+
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.darkest_red, libtcod.darker_red)
     libtcod.console_print_ex(panel, 1, panel_height - 2, libtcod.BKGND_NONE, libtcod.LEFT,
@@ -74,7 +73,7 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         else:
             inventory_title = 'Press the key next to an item to drop it'
 
-        inventory_menu(console, inventory_title, player.inventory, 50, screen_width, screen_height)
+        inventory_menu(console, inventory_title, player, 50, screen_width, screen_height)
 
 
 def clear_all(console, entities):
@@ -114,7 +113,6 @@ def recompute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0):
 
 def render_bar(panel, x, y, total_width, name, value, max, bar_color, back_color):
     bar_width = int(float(value) / max * total_width)
-    # int(x + total_width / 2)
 
     libtcod.console_set_default_background(panel, back_color)
     libtcod.console_rect(panel, x, panel.height - 1, bar_width, 1, False, libtcod.BKGND_SCREEN)
@@ -126,3 +124,9 @@ def render_bar(panel, x, y, total_width, name, value, max, bar_color, back_color
     libtcod.console_set_default_foreground(panel, libtcod.white)
     libtcod.console_print_ex(panel, x, panel.height - 1, libtcod.BKGND_NONE, libtcod.LEFT,
                              '{0}: {1}/{2}'.format(name, value, max))
+    for x_val in range(0, bar_width+1):
+        libtcod.console_put_char(panel, x_val, 0, '*')
+    for y_val in range(0, panel.height):
+        libtcod.console_put_char(panel, bar_width+1, y_val, '*')
+    for y_val in range(0, panel.height):
+        libtcod.console_put_char(panel, 0, y_val, '*')
