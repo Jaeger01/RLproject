@@ -1,7 +1,5 @@
-from entity import *
-from menus import *
-
-from Engine.game_states import *
+from engine.menus import *
+from engine.game_states import *
 
 colors = {
     'dark_wall': libtcod.Color(0, 0, 25),
@@ -12,7 +10,7 @@ colors = {
 
 
 def render_all(console, panel, entities, player, fov_map, fov_recompute, message_log, game_map, screen_width,
-               screen_height, bar_width, panel_height, panel_y, colors, game_state):
+               screen_height, bar_width, panel_height, panel_y, colors, game_state, mouse):
 
     if fov_recompute:
         # Draws tiles in game map
@@ -74,6 +72,13 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
             inventory_title = 'Press the key next to an item to drop it'
 
         inventory_menu(console, inventory_title, player, 50, screen_width, screen_height)
+
+    if game_state == GameStates.LOOK:
+        (x, y) = (mouse.cx, mouse.cy)
+        for entity in entities:
+            if entity.x == x and entity.y == y and libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+                mon = entity
+                look_menu(console, mon, screen_width, screen_height)
 
 
 def clear_all(console, entities):

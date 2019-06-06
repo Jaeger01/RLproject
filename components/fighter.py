@@ -1,9 +1,12 @@
 import tcod as libtcod
 
-from Engine.game_messages import Message
+from engine.game_messages import Message
 
 
 class Fighter:
+    """
+    Handles aspects of fighting an entity would do
+    """
     def __init__(self, hp, armor_value, attack_value):
         self.base_max_hp = hp
         self.hp = hp
@@ -17,7 +20,6 @@ class Fighter:
         if self.hp <= 0:
             results.append({'dead': self.owner})
         return results
-
 
     @property
     def max_hp(self):

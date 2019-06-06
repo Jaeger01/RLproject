@@ -1,9 +1,10 @@
 import tcod as libtcod
-
-from Engine.game_messages import Message
-
+from engine.game_messages import Message
 
 class Inventory:
+    """
+    Handles inventory of entity
+    """
     def __init__(self, capacity):
         self.capacity = capacity
         self.items = []

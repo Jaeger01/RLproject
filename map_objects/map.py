@@ -1,8 +1,7 @@
-from entity import Entity
-from item_functions import *
-from render_functions import RenderOrder
-
-from Engine.random_utils import *
+from engine.entity import Entity
+from engine.item_functions import *
+from engine.render_order import RenderOrder
+from engine.random_utils import *
 from components.ai import *
 from components.equipment import EquipmentSlots
 from components.equippable import Equippable
@@ -108,14 +107,14 @@ class Map:
 
     def place_entities(self, room, entities):
         # Handles monster gen
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 4], [5, 6]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[4, 1], [3, 4], [5, 6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
         number_of_monsters = randint(0, max_monsters_per_room)  # Gets rand num of spoopy monsters
 
         monster_chances = {
-            'ashlee': 20,
+            'ashlee': 45,
             'orc': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level),
-            'goblin': 80
+            'goblin': 60
         }
 
         item_chances = {

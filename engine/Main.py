@@ -1,10 +1,10 @@
-from death_functions import *
-from game_messages import *
-from render_functions import *
-
-from Engine.input_handlers import *
+from engine.death_functions import *
+from engine.game_messages import *
+from engine.render_functions import *
+from engine.input_handlers import *
 from loader_functions.data_loaders import *
 from loader_functions.initialize_new_game import *
+from engine.entity import *
 
 
 def main():
@@ -89,7 +89,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         fps = libtcod.sys_get_fps()
         libtcod.console_print_ex(main_console, 0, 0, libtcod.BKGND_NONE, libtcod.LEFT, 'FPS: {0}'.format(fps))
         # Captures events
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
         # Computes fov
         if fov_recompute:
@@ -100,7 +100,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                    constant_variables['screen_width'],
                    constant_variables['screen_height'], constant_variables['bar_width'],
                    constant_variables['panel_height'],
-                   constant_variables['panel_y'], colors, game_state)
+                   constant_variables['panel_y'], colors, game_state, mouse)
 
         fov_recompute = False  # Don't want to recompute unnecessarily
 
@@ -119,6 +119,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         inventory_index = action.get('inventory_index')
         drop_inventory = action.get('drop_inventory')
         take_stairs = action.get('take_stairs')
+        looking = action.get('looking')
         exit = action.get('exit')
 
         left_click = mouse_action.get('left_click')
@@ -161,6 +162,11 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             game_state = GameStates.ENEMY_TURN
             message_log.add_message(start)
 
+        if looking:
+            prev_game_state = GameStates.PLAYERS_TURN
+            game_state = GameStates.LOOK
+            message_log.add_message(Message('Mouse over a tile to look at it.', libtcod.purple))
+
         if show_inventory:
             prev_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
@@ -187,6 +193,8 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
 
+# looked was here
+
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
@@ -198,7 +206,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
         # Exits if exit
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.LOOK):
                 game_state = prev_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -215,6 +223,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             targeting = player_turn_result.get('targeting')
             equip = player_turn_result.get('equip')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
+            looked = player_turn_result.get('looked')
 
             if message:
                 message_log.add_message(message)
@@ -247,6 +256,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 game_state = GameStates.TARGETING
                 targeting_item = targeting
                 message_log.add_message(targeting_item.item.targeting_message)
+
+            if looked:
+                game_state = prev_game_state
+                message_log.add_message(Message('looked'))
 
             if equip:
                 equip_results = player.equipment.toggle_equip(equip)

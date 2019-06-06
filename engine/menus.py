@@ -1,4 +1,6 @@
 import tcod as libtcod
+from engine.descriptions import *
+import textwrap
 
 
 def menu(con, header, options, width, screen_width, screen_height, borders=False):
@@ -41,8 +43,45 @@ def menu(con, header, options, width, screen_width, screen_height, borders=False
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
-def look_menu(con, header, player, screen_width, screen_height):
-    print('placeholder')
+def look_menu(con, mon, screen_width, screen_height):
+    width = 50
+    height = 50
+    # calculate total height for the header (after auto-wrap) and one line per option
+    header_height = libtcod.console_get_height_rect(con, 0, 0, width, screen_height, mon.name)
+
+    # create an off-screen console that represents the menu's window
+    window = libtcod.console_new(width, height)
+
+    # print the header, with auto-wrap
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 1, 1, width, height, libtcod.BKGND_NONE, libtcod.LEFT, mon.name)
+    mon_desc = get_monster_desc()
+    # menu(con, mon.name, mon_desc.get('ashlee'), 50, screen_width, screen_height)
+    y = header_height + 1
+    mon_text = mon_desc[mon.name]
+    lined_mon_text = textwrap.wrap(mon_text, width - 2)
+    for line in lined_mon_text:
+        text = line
+        libtcod.console_print_ex(window, 1, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
+        y += 1
+
+    # libtcod.console_print_ex(window, 1, y, libtcod.BKGND_NONE, libtcod.LEFT, mon_desc[mon.name])
+
+    # blit the contents of "window" to the root console
+    x = int(screen_width / 2 - width / 2)
+    y = int(screen_height / 2 - height / 2)
+
+    # Draws * borders around menus if borders is True
+    for x_val in range(0, width):
+        libtcod.console_put_char(window, x_val, 0, '*')
+    for y_val in range(0, height):
+        libtcod.console_put_char(window, 0, y_val, '*')
+    for y_v in range(0, height):
+        libtcod.console_put_char(window, width-1, y_v, '*')
+    for x_v in range(0, width):
+        libtcod.console_put_char(window, x_v, height-1, '*')
+
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
 def inventory_menu(con, header, player, inventory_width, screen_width, screen_height):

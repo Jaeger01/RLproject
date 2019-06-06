@@ -1,9 +1,8 @@
 import tcod as libtcod
-from entity import Entity
-from game_messages import MessageLog
-from render_functions import RenderOrder
-
-from Engine.game_states import GameStates
+from engine.entity import Entity
+from engine.game_messages import MessageLog
+from engine.render_order import RenderOrder
+from engine.game_states import GameStates
 from components.equipment import Equipment
 from components.fighter import Fighter
 from components.inventory import Inventory
@@ -11,7 +10,7 @@ from map_objects.map import Map
 
 
 def get_constant_variables():
-    window_title = 'RL project'
+    window_title = 'Tongue of the Ancients'
 
     screen_width = 150
     screen_height = 80
@@ -29,7 +28,7 @@ def get_constant_variables():
 
     room_max_size = 10
     room_min_size = 6
-    max_rooms = 30
+    max_rooms = 10
 
     fov_algorithm = 0
     fov_light_walls = True

@@ -1,6 +1,6 @@
 import tcod as libtcod
 
-from Engine.game_messages import Message
+from engine.game_messages import Message
 
 
 def heal(*args, **kwargs):

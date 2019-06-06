@@ -1,5 +1,9 @@
 import tcod as libtcod
 
+"""
+Holds AIs for monsters
+"""
+
 
 class BasicMonster:
     def take_turn(self, target, fov_map, game_map, entities):

@@ -1,7 +1,10 @@
-from Engine.equipment_slots import EquipmentSlots
+from engine.equipment_slots import EquipmentSlots
 
 
 class Equipment:
+    """
+    Handles aspects of entities that are equipment
+    """
     def __init__(self, main_hand=None, off_hand=None, body=None, legs=None, feet=None):
         self.main_hand = main_hand
         self.off_hand = off_hand

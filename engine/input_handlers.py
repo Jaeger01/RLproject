@@ -1,6 +1,6 @@
 import tcod as libtcod
 
-from Engine.game_states import GameStates
+from engine.game_states import GameStates
 
 
 def handle_keys(key, game_state):
@@ -12,6 +12,8 @@ def handle_keys(key, game_state):
         return handle_targeting_keys(key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead(key)
+    elif game_state == GameStates.LOOK:
+        return handle_look_menu(key)
 
     return {}
 
@@ -20,24 +22,28 @@ def handle_player_turn(key):
     key_char = chr(key.c)  # Gets key pressed
 
     # Movement keys for players
-    if key.vk == libtcod.KEY_UP or key_char == 'w':
+    if key.vk == libtcod.KEY_UP or key.vk == libtcod.KEY_KP8:
         return {'move': (0, -1)}
-    elif key.vk == libtcod.KEY_DOWN or key_char == 'x':
+    elif key.vk == libtcod.KEY_DOWN or key.vk == libtcod.KEY_KP2:
         return {'move': (0, 1)}
-    elif key.vk == libtcod.KEY_LEFT or key_char == 'a':
+    elif key.vk == libtcod.KEY_LEFT or key.vk == libtcod.KEY_KP4:
         return {'move': (-1, 0)}
-    elif key.vk == libtcod.KEY_RIGHT or key_char == 'd':
+    elif key.vk == libtcod.KEY_RIGHT or key.vk == libtcod.KEY_KP6:
         return {'move': (1, 0)}
 
     # The keys for diagonal movements
-    elif key_char == 'q':
+    elif key.vk == libtcod.KEY_KP7:
         return {'move': (-1, -1)}
-    elif key_char == 'e':
+    elif key.vk == libtcod.KEY_KP9:
         return {'move': (1, -1)}
-    elif key_char == 'z':
+    elif key.vk == libtcod.KEY_KP1:
         return {'move': (-1, 1)}
-    elif key_char == 'c':
+    elif key.vk == libtcod.KEY_KP3:
         return {'move': (1, 1)}
+
+    # keys to do things
+    if key_char == 'l':
+        return {'looking': True}
 
     if key_char == 'g':
         return {'pickup': True}
@@ -72,6 +78,12 @@ def handle_main_menu(key):
     elif key_char == 'c':
         return {'exit': True}
 
+    return {}
+
+
+def handle_look_menu(key):
+    if key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
     return {}
 
 
