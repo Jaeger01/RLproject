@@ -43,6 +43,8 @@ def menu(con, header, options, width, screen_width, screen_height, borders=False
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
+# Look menus are essentially large text boxes to display monster/item information
+# Could be tweeked to be used as menus for displaying dialogue options and things
 def look_menu(con, mon, screen_width, screen_height):
     width = 50
     height = 50

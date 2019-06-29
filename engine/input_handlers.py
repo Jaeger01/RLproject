@@ -18,6 +18,15 @@ def handle_keys(key, game_state):
     return {}
 
 
+def handle_mouse(mouse, game_state):
+    if game_state == GameStates.PLAYERS_TURN:
+        return handle_player_mouse(mouse)
+    elif game_state == GameStates.TARGETING:
+        return handle_targeting_mouse(mouse)
+
+    return {}
+
+
 def handle_player_turn(key):
     key_char = chr(key.c)  # Gets key pressed
 
@@ -60,11 +69,35 @@ def handle_player_turn(key):
     if key.vk == libtcod.KEY_SPACE:
         return {'wait': True}
 
+    # Grimoire handling
+    if key.vk == libtcod.KEY_1:
+        return {'grimoire_index': 0}
+
+    if key.vk == libtcod.KEY_2:
+        return {'grimoire_index': 1}
+
+    if key.vk == libtcod.KEY_3:
+        return {'grimoire_index': 2}
+
+    if key.vk == libtcod.KEY_4:
+        return {'grimoire_index': 3}
+
+    if key.vk == libtcod.KEY_5:
+        return {'grimoire_index': 4}
+
+    # Exit
     if key.vk == libtcod.KEY_ESCAPE:
-        # Exit
         return{'exit': True}
 
     # Happens when no key is pressed
+    return {}
+
+
+def handle_player_mouse(mouse):
+    (x, y) = (mouse.cx, mouse.cy)
+
+    if mouse.lbutton_pressed:
+        return {'move': (x, y)}
     return {}
 
 
@@ -91,7 +124,7 @@ def handle_targeting_mouse(mouse):
     (x, y) = (mouse.cx, mouse.cy)
 
     if mouse.lbutton_pressed:
-        return {'left_click': (x, y)}
+        return {'target_click': (x, y)}
     elif mouse.rbutton_pressed:
         return {'right_click': (x, y)}
     return {}

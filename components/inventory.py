@@ -1,6 +1,7 @@
 import tcod as libtcod
 from engine.game_messages import Message
 
+
 class Inventory:
     """
     Handles inventory of entity

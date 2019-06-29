@@ -1,16 +1,19 @@
 import tcod as libtcod
 from engine.entity import Entity
-from engine.game_messages import MessageLog
+from engine.game_messages import MessageLog, Message
 from engine.render_order import RenderOrder
 from engine.game_states import GameStates
 from components.equipment import Equipment
 from components.fighter import Fighter
 from components.inventory import Inventory
 from map_objects.map import Map
+from components.spell import Spell
+from components.grimoire import Grimoire
+from engine.spell_functions import *
 
 
 def get_constant_variables():
-    window_title = 'Tongue of the Ancients'
+    window_title = 'Tongue of the Ancients'  # Working title
 
     screen_width = 150
     screen_height = 80
@@ -59,11 +62,15 @@ def get_constant_variables():
 
 
 def get_game_variables(constant_variables):
-    fighter_component = Fighter(hp=999, armor_value=3, attack_value=5)
+    fighter_component = Fighter(hp=999, armor_class=3, strength=3, intelligence=5)
     inventory_component = Inventory(26)
+    grimoire_component = Grimoire(5)
     equipment_component = Equipment()
     player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
-                    fighter=fighter_component, inventory=inventory_component, equipment=equipment_component)
+                    fighter=fighter_component, inventory=inventory_component, grimoire=grimoire_component, equipment=equipment_component)
+    spell_comp = Spell(cast_function=lightning, damage=15 + player.fighter.intelligence_mod, maximum_range=10)
+    spell = Entity(0, 0, '~', libtcod.dark_yellow, 'lightning', spell=spell_comp)
+    player.grimoire.add_spell(spell)
     entities = [player]
 
     # Initializes map

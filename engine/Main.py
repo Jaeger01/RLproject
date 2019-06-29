@@ -110,19 +110,23 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
         # Action handling
         action = handle_keys(key, game_state)
-        mouse_action = handle_targeting_mouse(mouse)
+        mouse_action = handle_mouse(mouse, game_state)
 
+        # Keys
         move = action.get('move')
         wait = action.get('wait')
         pickup = action.get('pickup')
         show_inventory = action.get('show_inventory')
         inventory_index = action.get('inventory_index')
+        grimoire_index = action.get('grimoire_index')
         drop_inventory = action.get('drop_inventory')
         take_stairs = action.get('take_stairs')
         looking = action.get('looking')
         exit = action.get('exit')
 
-        left_click = mouse_action.get('left_click')
+        # Mouse
+        move_click = mouse_action.get('move')  #  For move clicking but it's of course not working rn
+        target_click = mouse_action.get('target_click')
         right_click = mouse_action.get('right_click')
 
         # Does player turn
@@ -183,17 +187,23 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
 
-        if game_state == GameStates.TARGETING:
-            if left_click:
-                target_x, target_y = left_click
+        if grimoire_index is not None and game_state == GameStates.PLAYERS_TURN:
+            spell = player.grimoire.spells[grimoire_index]
+            player_turn_results.extend(player.grimoire.cast(spell, entities=entities, fov_map=fov_map))
 
-                item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
-                                                        target_x=target_x, target_y=target_y)
+        if game_state == GameStates.TARGETING:
+            item_use_results = None
+            if target_click:
+                target_x, target_y = target_click
+                if targeting_item.item:
+                    item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
+                                                            target_x=target_x, target_y=target_y)
+                elif targeting_item.spell:
+                    item_use_results = player.grimoire.cast(targeting_item, entities=entities, fov_map=fov_map,
+                                                            target_x=target_x, target_y=target_y)
                 player_turn_results.extend(item_use_results)
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
-
-# looked was here
 
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
@@ -220,6 +230,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             item_added = player_turn_result.get('item_added')
             item_consumed = player_turn_result.get('consumed')
             item_dropped = player_turn_result.get('item_dropped')
+            spell_added = player_turn_result.get('spell_added')
             targeting = player_turn_result.get('targeting')
             equip = player_turn_result.get('equip')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
@@ -251,11 +262,17 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 entities.append(item_dropped)
                 game_state == GameStates.ENEMY_TURN
 
+            if spell_added:
+                game_state = GameStates.ENEMY_TURN
+
             if targeting:
                 prev_game_state = GameStates.PLAYERS_TURN
                 game_state = GameStates.TARGETING
                 targeting_item = targeting
-                message_log.add_message(targeting_item.item.targeting_message)
+                if targeting_item.item:
+                    message_log.add_message(targeting_item.item.targeting_message)
+                if targeting_item.spell:
+                    message_log.add_message(targeting_item.spell.targeting_message)
 
             if looked:
                 game_state = prev_game_state

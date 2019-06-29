@@ -119,9 +119,9 @@ class Map:
 
         item_chances = {
             'healing_potion': from_dungeon_level([[25, 4]], self.dungeon_level),
-            'lighting_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[20, 1]], self.dungeon_level),
-            'wand': from_dungeon_level([[100, 1]], self.dungeon_level)
+            'lighting_scroll': from_dungeon_level([[500, 1]], self.dungeon_level),
+            'fireball_scroll': from_dungeon_level([[10, 2]], self.dungeon_level),
+            'wand': from_dungeon_level([[30, 1]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):
@@ -134,19 +134,19 @@ class Map:
                 monster_choice = random_choice_from_dict(monster_chances)
 
                 if monster_choice == 'ashlee':
-                    monster_fight_comp = Fighter(hp=10, armor_value=3, attack_value=5)
+                    monster_fight_comp = Fighter(hp=10, armor_class=3, strength=5)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'A', libtcod.purple, "Ashlee", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
 
                 elif monster_choice == 'orc':
-                    monster_fight_comp = Fighter(hp=10, armor_value=4, attack_value=5)
+                    monster_fight_comp = Fighter(hp=10, armor_class=4, strength=5)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'O', libtcod.darkest_green, "Orc", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
 
                 elif monster_choice == 'goblin':
-                    monster_fight_comp = Fighter(hp=10, armor_value=2, attack_value=2)
+                    monster_fight_comp = Fighter(hp=10, armor_class=2, strength=2)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'G', libtcod.dark_green, "Goblin", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)

@@ -2,22 +2,7 @@ import tcod as libtcod
 from engine.game_messages import Message
 
 
-def heal(*args, **kwargs):
-    entity = args[0]
-    amount = kwargs.get('amount')
-
-    results = []
-
-    if entity.fighter.hp == entity.fighter.max_hp:
-        results.append({'consumed': False, 'message': Message('You are already at full health', libtcod.yellow)})
-    else:
-        entity.fighter.heal(amount)
-        results.append({'consumed': True, 'message': Message('Your wounds start to feel better', libtcod.green)})
-
-    return results
-
-
-def cast_lighting(*args, **kwargs):
+def lightning(*args, **kwargs):
     caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
@@ -38,17 +23,17 @@ def cast_lighting(*args, **kwargs):
                 closest_dist = distance
 
     if target:
-        results.append({'consumed': True, 'target': target,
+        results.append({'target': target,
                         'message': Message('A lighting bolt strikes the {0} for {1} damage'.format(target.name,
                                                                                                    damage))})
         results.extend(target.fighter.take_damage(damage))
     else:
-        results.append({'consumed': False, 'target': None, 'message': Message('No enemy is close enough', libtcod.red)})
+        results.append({'target': None, 'message': Message('No enemy is close enough', libtcod.red)})
 
     return results
 
 
-def cast_fireball(*args, **kwargs):
+def fireball(*args, **kwargs):
     entites = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')

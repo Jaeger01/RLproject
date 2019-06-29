@@ -5,7 +5,8 @@ colors = {
     'dark_wall': libtcod.Color(0, 0, 25),
     'dark_ground': libtcod.Color(5, 10, 50),
     'light_wall': libtcod.Color(0, 0, 170),
-    'light_ground': libtcod.Color(125, 170, 250)
+    'light_ground': libtcod.Color(125, 170, 250),
+    'highlighted': libtcod.Color(230, 250, 60)
 }
 
 
@@ -135,3 +136,15 @@ def render_bar(panel, x, y, total_width, name, value, max, bar_color, back_color
         libtcod.console_put_char(panel, bar_width+1, y_val, '*')
     for y_val in range(0, panel.height):
         libtcod.console_put_char(panel, 0, y_val, '*')
+
+
+# Not working correctly, just paints everything. the paths don't disappear when the mouse is moved
+def render_path(con, player, fov_map, target_x, target_y, path_color):
+    # highlights path to mouse
+    # (target_x, target_y) = (mouse.cx, mouse.cy)
+    line = libtcod.line_iter(player.x, player.y, target_x, target_y)
+    for x, y in line:
+        if libtcod.map_is_in_fov(fov_map, x, y):
+            libtcod.console_set_char_background(con, x, y, path_color, libtcod.BKGND_LIGHTEN)
+
+
