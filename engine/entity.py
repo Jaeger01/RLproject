@@ -11,8 +11,8 @@ class Entity:
     Object representing players, monsters, items, etc.
     """
 
-    def __init__(self, x, y, char, color, name,  blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
-                 inventory=None, item=None, ai=None, stairs=None, equipment=None, equippable=None, grimoire=None, \
+    def __init__(self, x, y, char, color, name, steps=0, blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
+                 inventory=None, item=None, ai=None, stairs=None, equipment=None, equippable=None, grimoire=None,
                  spell=None):
         self.x = x
         self.y = y
@@ -30,6 +30,7 @@ class Entity:
         self.equippable = equippable
         self.grimoire = grimoire
         self.spell = spell
+        self.steps = steps
 
         if self.fighter:
             self.fighter.owner = self
@@ -66,6 +67,7 @@ class Entity:
         # Moves entity
         self.x += moveX
         self.y += moveY
+        self.steps += 1
 
     def move_towards(self, target_x, target_y, game_map, entities):
         moveX = target_x - self.x

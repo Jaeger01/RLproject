@@ -8,6 +8,7 @@ def lightning(*args, **kwargs):
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     maximum_range = kwargs.get('maximum_range')
+    cost = kwargs.get('cost')
 
     results = []
 
@@ -27,6 +28,7 @@ def lightning(*args, **kwargs):
                         'message': Message('A lighting bolt strikes the {0} for {1} damage'.format(target.name,
                                                                                                    damage))})
         results.extend(target.fighter.take_damage(damage))
+        results.extend(caster.fighter.reduce_mana(cost))
     else:
         results.append({'target': None, 'message': Message('No enemy is close enough', libtcod.red)})
 
@@ -34,10 +36,12 @@ def lightning(*args, **kwargs):
 
 
 def fireball(*args, **kwargs):
+    caster = args[0]
     entites = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     radius = kwargs.get('radius')
+    cost = kwargs.get('cost')
     target_x = kwargs.get('target_x')
     target_y = kwargs.get('target_y')
 
@@ -55,5 +59,6 @@ def fireball(*args, **kwargs):
             results.append({'message': Message('The {0} gets burned for {1} hit points!'.format(entity.name, damage),
                                                libtcod.orange)})
             results.extend(entity.fighter.take_damage(damage))
+            results.extend(caster.fighter.reduce_mana(cost))
 
     return results

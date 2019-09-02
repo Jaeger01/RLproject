@@ -87,7 +87,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
     # Game Loop
     while not libtcod.console_is_window_closed():
         fps = libtcod.sys_get_fps()
+        steps = player.steps
         libtcod.console_print_ex(main_console, 0, 0, libtcod.BKGND_NONE, libtcod.LEFT, 'FPS: {0}'.format(fps))
+        libtcod.console_print_ex(main_console, 10, 0, libtcod.BKGND_NONE, libtcod.LEFT, 'steps: {0}'.format(steps))
+
         # Captures events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
@@ -125,7 +128,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         exit = action.get('exit')
 
         # Mouse
-        move_click = mouse_action.get('move')  #  For move clicking but it's of course not working rn
+        move_click = mouse_action.get('move')  # For move clicking but it's of course not working rn
         target_click = mouse_action.get('target_click')
         right_click = mouse_action.get('right_click')
 
@@ -134,6 +137,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         if move and game_state == GameStates.PLAYERS_TURN:
             start = Message('----Start of Turn----')
             message_log.add_message(start)
+
+            # Regens manna each step
+            if player.fighter.mana < player.fighter.max_mana:
+                player.fighter.mana += 1
 
             moveX, moveY = move
             destination_x = player.x + moveX
@@ -201,6 +208,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 elif targeting_item.spell:
                     item_use_results = player.grimoire.cast(targeting_item, entities=entities, fov_map=fov_map,
                                                             target_x=target_x, target_y=target_y)
+
                 player_turn_results.extend(item_use_results)
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})

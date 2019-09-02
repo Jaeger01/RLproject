@@ -119,9 +119,9 @@ class Map:
 
         item_chances = {
             'healing_potion': from_dungeon_level([[25, 4]], self.dungeon_level),
-            'lighting_scroll': from_dungeon_level([[500, 1]], self.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[10, 2]], self.dungeon_level),
-            'wand': from_dungeon_level([[30, 1]], self.dungeon_level)
+            'lighting_scroll': from_dungeon_level([[25, 3]], self.dungeon_level),
+            'fireball_scroll': from_dungeon_level([[25, 2]], self.dungeon_level),
+            'wand': from_dungeon_level([[15, 1]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):
@@ -179,7 +179,7 @@ class Map:
                     item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
                 elif item_choice == 'wand':
-                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
                     item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
 
                 entities.append(item)

@@ -7,7 +7,7 @@ class Fighter:
     """
     Handles aspects of fighting an entity would do
     """
-    def __init__(self, hp, armor_class, strength, intelligence=0, xp=0):
+    def __init__(self, hp, armor_class, strength, intelligence=0, xp=0, mana=100):
         self.base_max_hp = hp
         self.hp = hp
         self.armor_class = armor_class
@@ -16,6 +16,12 @@ class Fighter:
         self.intelligence = intelligence
         self.intelligence_mod = int((intelligence-2)-5)
         self.xp = xp
+        self.max_mana = mana
+        self.mana = mana
+
+    def move(self):
+        if self.mana < self.max_mana:
+            self.mana += 1
 
     def take_damage(self, amount):
         results = []
@@ -23,6 +29,14 @@ class Fighter:
 
         if self.hp <= 0:
             results.append({'dead': self.owner})
+        return results
+
+    def reduce_mana(self, amount):
+        results = []
+        self.mana -= amount
+
+        if self.mana < 0:
+            self.mana = 0
         return results
 
     @property

@@ -35,6 +35,7 @@ class Grimoire:
 
         if spell_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
             results.append({'targeting': spell_entity})
+
         else:
             kwargs = {**spell_component.function_kwargs, **kwargs}
             spell_cast_results = spell_component.cast_function(self.owner, **kwargs)

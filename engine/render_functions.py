@@ -60,10 +60,12 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
     for y_val in range(0, panel.height):
         libtcod.console_put_char(panel, int(message_log.width/2), y_val, '*', libtcod.BKGND_NONE)
 
-    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
+    render_bar(panel, 1, 2, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.darkest_red, libtcod.darker_red)
-    libtcod.console_print_ex(panel, 1, panel_height - 2, libtcod.BKGND_NONE, libtcod.LEFT,
+    libtcod.console_print_ex(panel, 1, 1, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Floor: {0}'.format(game_map.dungeon_level))
+    render_bar(panel, 1, 3, bar_width, 'MANA', player.fighter.mana, player.fighter.max_mana,
+               libtcod.darkest_blue, libtcod.darkest_blue)
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
@@ -121,15 +123,15 @@ def render_bar(panel, x, y, total_width, name, value, max, bar_color, back_color
     bar_width = int(float(value) / max * total_width)
 
     libtcod.console_set_default_background(panel, back_color)
-    libtcod.console_rect(panel, x, panel.height - 1, bar_width, 1, False, libtcod.BKGND_SCREEN)
+    libtcod.console_rect(panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
     libtcod.console_set_default_background(panel, bar_color)
 
     if bar_width > 0:
-        libtcod.console_rect(panel, x, panel.height - 1, bar_width, 1, False, libtcod.BKGND_SCREEN)
+        libtcod.console_rect(panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
 
-    libtcod.console_set_default_foreground(panel, libtcod.white)
-    libtcod.console_print_ex(panel, x, panel.height - 1, libtcod.BKGND_NONE, libtcod.LEFT,
-                             '{0}: {1}/{2}'.format(name, value, max))
+    libtcod.console_set_default_foreground(panel, libtcod.white) # panel.height - 1
+    libtcod.console_print_ex(panel, x, y, libtcod.BKGND_NONE, libtcod.LEFT,
+                             '{0}:{1}/{2}'.format(name, value, max))
     for x_val in range(0, bar_width+1):
         libtcod.console_put_char(panel, x_val, 0, '*')
     for y_val in range(0, panel.height):
