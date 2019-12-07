@@ -17,3 +17,8 @@ def get_monster_desc():
     }
 
     return monster_desc
+
+def get_item_desc():
+    item_desc = {
+
+    }

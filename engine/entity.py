@@ -13,7 +13,7 @@ class Entity:
 
     def __init__(self, x, y, char, color, name, steps=0, blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
                  inventory=None, item=None, ai=None, stairs=None, equipment=None, equippable=None, grimoire=None,
-                 spell=None):
+                 spell=None, interactable=False, world_object=False):
         self.x = x
         self.y = y
         self.char = char
@@ -31,6 +31,8 @@ class Entity:
         self.grimoire = grimoire
         self.spell = spell
         self.steps = steps
+        self.interactable = interactable
+        self.world_object = world_object
 
         if self.fighter:
             self.fighter.owner = self
@@ -40,6 +42,9 @@ class Entity:
 
         if self.item:
             self.item.owner = self
+
+        if self.world_object:
+            self.world_object.owner = self
 
         if self.spell:
             self.spell.owner = self
@@ -131,6 +136,27 @@ class Entity:
 
                 # Delete the path to free memory
             libtcod.path_delete(my_path)
+
+    """" Checks if object is next to player"""
+    def is_next_to(self,object):
+        if object.x == self.x-1 and object.y == self.y-1:
+            return True
+        elif object.x == self.x and object.y == self.y-1:
+            return True
+        elif object.x == self.x+1 and object.y == self.y-1:
+            return True
+        elif object.x == self.x-1 and object.y == self.y:
+            return True
+        elif object.x == self.x+1 and object.y == self.y:
+            return True
+        elif object.x == self.x-1 and object.y == self.y+1:
+            return True
+        elif object.x == self.x and object.y == self.y+1:
+            return True
+        elif object.x == self.x+1 and object.y == self.y+1:
+            return True
+        else:
+            return False
 
     def distance_to(self, other):
         moveX = other.x - self.x

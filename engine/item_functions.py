@@ -72,3 +72,15 @@ def cast_fireball(*args, **kwargs):
             results.extend(entity.fighter.take_damage(damage))
 
     return results
+
+"""
+World object functions
+"""
+
+
+def spell_tome(*args, **kwargs):
+    results = []
+
+    results.append({'consumed':True, 'spell_tome': True, 'message': Message('You find a grimoire page!',libtcod.blue)})
+
+    return results

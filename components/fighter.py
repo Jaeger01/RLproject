@@ -71,7 +71,7 @@ class Fighter:
 
     def attack(self, target):
         results = []
-        damage = self.strength_mod + roll_dice(6) + roll_dice(6)
+        damage = self.strength_mod + roll_dice(4) + roll_dice(4)
         # If you don't roll higher than their armor class your attack doesn't hit
         if roll_dice(20) < target.fighter.armor_class:
             results.append({'message': Message('{0} attacks {1} but the blow glances off'.format(

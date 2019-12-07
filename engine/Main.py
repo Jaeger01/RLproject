@@ -125,6 +125,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         drop_inventory = action.get('drop_inventory')
         take_stairs = action.get('take_stairs')
         looking = action.get('looking')
+        interacting = action.get('interact')
         exit = action.get('exit')
 
         # Mouse
@@ -148,7 +149,6 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
             if not game_map.is_blocked(destination_x, destination_y):
                 target = get_blocking_entities_at_location(entities, destination_x, destination_y)
-
                 if target:
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
@@ -222,6 +222,15 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                     libtcod.console_clear(main_console)
                     break
 
+        if interacting:
+            for entity in entities:
+                if entity.interactable and player.is_next_to(entity) and entity.fighter != True:
+                    if entity.name == 'spell_tome':
+                        pickup_results = player.inventory.add_item(entity)
+                        player_turn_results.extend(pickup_results)
+
+
+
         # Exits if exit
         if exit:
             if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.LOOK):
@@ -243,7 +252,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             equip = player_turn_result.get('equip')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
             looked = player_turn_result.get('looked')
-
+            spell_tome = player_turn_result.get('spell_tome')
             if message:
                 message_log.add_message(message)
 
@@ -269,6 +278,11 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             if item_dropped:
                 entities.append(item_dropped)
                 game_state == GameStates.ENEMY_TURN
+
+            if spell_tome:
+                spell_comp = Spell(cast_function=lightning, damage=15 + player.fighter.intelligence_mod, maximum_range = 5, cost=25)
+                spell = Entity(0, 0, '~', libtcod.dark_yellow, 'lightning', spell=spell_comp)
+                player.grimoire.add_spell(spell)
 
             if spell_added:
                 game_state = GameStates.ENEMY_TURN

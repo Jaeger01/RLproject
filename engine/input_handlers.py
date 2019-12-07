@@ -69,6 +69,9 @@ def handle_player_turn(key):
     if key.vk == libtcod.KEY_SPACE:
         return {'wait': True}
 
+    if key_char == 'e':
+        return {'interact': True}
+
     # Grimoire handling
     if key.vk == libtcod.KEY_1:
         return {'grimoire_index': 0}

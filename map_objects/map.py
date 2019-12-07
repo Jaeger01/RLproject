@@ -10,6 +10,7 @@ from components.item import Item
 from components.stairs import Stairs
 from map_objects.rectangle import Rect
 from map_objects.tile import Tile
+from components.world_object import world_object
 
 
 class Map:
@@ -123,6 +124,17 @@ class Map:
             'fireball_scroll': from_dungeon_level([[25, 2]], self.dungeon_level),
             'wand': from_dungeon_level([[15, 1]], self.dungeon_level)
         }
+
+        for i in range(0,1):
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
+
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                world_obj_comp = Item(use_function=spell_tome)
+                world_objects = Entity(x, y, '$', libtcod.dark_flame, 'spell_tome', render_order=RenderOrder.ITEM,
+                                       item=world_obj_comp, interactable=True)
+
+                entities.append(world_objects)
 
         for i in range(number_of_monsters):
             # Choose random location in the room
