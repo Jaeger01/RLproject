@@ -45,23 +45,27 @@ def menu(con, header, options, width, screen_width, screen_height, borders=False
 
 # Look menus are essentially large text boxes to display monster/item information
 # Could be tweeked to be used as menus for displaying dialogue options and things
-def look_menu(con, mon, screen_width, screen_height):
+def look_menu(con, thing, screen_width, screen_height):
     width = 50
     height = 50
     # calculate total height for the header (after auto-wrap) and one line per option
-    header_height = libtcod.console_get_height_rect(con, 0, 0, width, screen_height, mon.name)
+    header_height = libtcod.console_get_height_rect(con, 0, 0, width, screen_height, thing.name)
 
     # create an off-screen console that represents the menu's window
     window = libtcod.console_new(width, height)
 
     # print the header, with auto-wrap
     libtcod.console_set_default_foreground(window, libtcod.white)
-    libtcod.console_print_rect_ex(window, 1, 1, width, height, libtcod.BKGND_NONE, libtcod.LEFT, mon.name)
+    libtcod.console_print_rect_ex(window, 1, 1, width, height, libtcod.BKGND_NONE, libtcod.LEFT, thing.name)
     mon_desc = get_monster_desc()
+    item_desc = get_item_desc()
     # menu(con, mon.name, mon_desc.get('ashlee'), 50, screen_width, screen_height)
     y = header_height + 1
-    mon_text = mon_desc[mon.name]
-    lined_mon_text = textwrap.wrap(mon_text, width - 2)
+    if thing.item:
+        thing_text = item_desc[thing.name]
+    else:
+        thing_text = mon_desc[thing.name]
+    lined_mon_text = textwrap.wrap(thing_text, width - 2)
     for line in lined_mon_text:
         text = line
         libtcod.console_print_ex(window, 1, y, libtcod.BKGND_NONE, libtcod.LEFT, text)

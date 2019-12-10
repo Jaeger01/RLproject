@@ -80,8 +80,8 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         (x, y) = (mouse.cx, mouse.cy)
         for entity in entities:
             if entity.x == x and entity.y == y and libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
-                mon = entity
-                look_menu(console, mon, screen_width, screen_height)
+                thing = entity
+                look_menu(console, thing, screen_width, screen_height)
 
 
 def clear_all(console, entities):

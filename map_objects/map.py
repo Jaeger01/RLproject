@@ -175,13 +175,13 @@ class Map:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 item_choice = random_choice_from_dict(item_chances)
                 if item_choice == 'healing_potion':
-                    item_component = Item(use_function=heal, amount=6)
+                    item_component = Item(use_function=heal, amount=5)
                     item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
                                   item=item_component)
 
-                elif item_choice == 'lighting_scroll':
+                elif item_choice == 'lightning_scroll':
                     item_component = Item(use_function=cast_lighting, damage=20, maximum_range=5)
-                    item = Entity(x, y, '~', libtcod.yellow, 'Lighting Scroll', render_order=RenderOrder.ITEM,
+                    item = Entity(x, y, '~', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
 
                 elif item_choice == 'fireball_scroll':

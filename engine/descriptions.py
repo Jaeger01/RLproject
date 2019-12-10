@@ -20,5 +20,10 @@ def get_monster_desc():
 
 def get_item_desc():
     item_desc = {
-
+        'Healing Potion': 'Tastes like a strawberry milkshake. Restores 5 HP',
+        'Lightning Scroll': 'Glowing runes on old parchment. Produces a bolt of lightning when read aloud',
+        'Fireball Scroll': 'Glowing runes on old parchment. Produces a ball of flame when read aloud',
+        'Wand': 'A wand made from [insert wood type here]. Int + 3'
     }
+
+    return  item_desc
