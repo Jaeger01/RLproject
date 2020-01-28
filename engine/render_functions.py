@@ -35,7 +35,7 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
                         #libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_wall'), libtcod.BKGND_SET)
                     else:
-                        #libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
+                        libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
 
     entities_in_render_order = sorted(entities, key=lambda z: z.render_order.value)
@@ -55,10 +55,6 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         libtcod.console_print_ex(panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
         y += 1
 
-   # for x_val in range(bar_width+1, int(message_log.width/2)):
-   #     libtcod.console_put_char(panel, x_val, 0, '*', libtcod.BKGND_NONE)
-   # for y_val in range(0, panel.height):
-   #     libtcod.console_put_char(panel, int(message_log.width/2), y_val, '*', libtcod.BKGND_NONE)
 
     render_bar(panel, 1, 2, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.darkest_red, libtcod.darker_red)
