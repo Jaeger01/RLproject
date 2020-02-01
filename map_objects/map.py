@@ -10,7 +10,8 @@ from components.item import Item
 from components.stairs import Stairs
 from map_objects.rectangle import Rect
 from map_objects.tile import Tile
-from components.world_object import world_object
+from random import randint
+import tcod.bsp
 
 
 class Map:
@@ -25,89 +26,79 @@ class Map:
 
         return tiles
 
-    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities):
-        rooms = []
-        num_rooms = 0
-        last_rm_center_x = None
-        last_rm_center_y = None
+    def make_BSP_map(self, player, entities, map_width, map_height):
+        # parameters for BSP splitting
+        depth = 4
+        min_width = 5
+        min_height = 5
+        hori_ratio = 1.5
+        verti_ratio = 1.5
+        # mess with seeds??
 
-        for r in range(max_rooms):
-            # Gets random height and width
-            w = randint(room_min_size, room_max_size)
-            h = randint(room_min_size, room_max_size)
-            # Random position without going out of the boundaries of the map
-            x = randint(0, map_width - w - 5)
-            y = randint(0, map_height - h - 5)
+        # creates BSP tree and splits recursively with given parameters
+        tree = tcod.bsp.BSP(x=5, y=3, width=map_width-5, height=map_height-5)
+        tree.split_recursive(
+            depth=depth,
+            min_width=min_width,
+            min_height=min_height,
+            max_horizontal_ratio=hori_ratio,
+            max_vertical_ratio=verti_ratio
+        )
+        # iterates through nodes creating rooms and hall ways
+        self.create_BSP_rooms(player, tree, entities)
 
-            new_room = Rect(x, y, w, h)
+        # iterates through created rooms place monstas
+        for node in tree.pre_order():
+            if not node.children:
+                self.place_bsp_entities(node, entities)
 
-            # Checks if rooms intersect
-            for other_room in rooms:
-                if new_room.intersect(other_room):
-                    break
-            else:
-                # No intersection
+    def create_BSP_rooms(self, player, tree, entities):
+        """Creates rooms from BSP leafs"""
+        room_centers = []
+        for node in tree.pre_order():
+            # random height and width for rooms
+            rand_width = randint(node.x + 4, (node.x + node.width-1))
+            rand_height = randint(node.y + 4, (node.y + node.height-1))
 
-                # Draws room tiles
-                self.create_room(new_room)
+            node.width = rand_width
+            node.height = rand_height
 
-                # center coordinates of the new room
-                (new_x, new_y) = new_room.center()
+            if not node.children:
+                # creates rooms
+                # adds center of node to be used for hallway mining
+                center_x = int((rand_width + node.x)/2)
+                center_y = int((rand_height + node.y)/2)
+                room_centers.append([center_x,center_y])
+                for x in range(node.x, node.width):
+                    for y in range(node.y, node.height):
+                        #if self.node_area_check(rand_height, rand_width, 10):  #Check if this is needed after we get the random room sizes working
+                        self.tiles[x][y].block_sight = False
+                        self.tiles[x][y].blocked = False
 
-                last_rm_center_x = new_x
-                last_rm_center_y = new_y
+        for i in range(len(room_centers)):
+            if i == 0:
+                player.x , player.y = room_centers[i]
 
-                if num_rooms == 0:
-                    player.x = new_x
-                    player.y = new_y
-                else:
-                    # Connect rooms with tunnels
+            s = randint(1, len(room_centers))
+            if s == i:
+                s_center_x, s_center_y = room_centers[s]
+                stairs_component = Stairs(self.dungeon_level + 1)
+                down_stairs = Entity(s_center_x, s_center_y , '>', libtcod.red, 'Stairs',
+                                     render_order=RenderOrder.STAIRS, stairs=stairs_component)
+                entities.append(down_stairs)
 
-                    (prev_x, prev_y) = rooms[num_rooms - 1].center()
+            x1, y1 = room_centers[i-1]
+            x2, y2 = room_centers[i]
 
-                    if randint(0, 1) == 1:
-                        # first move horizontally, then vertically
-                        self.create_h_tunnel(prev_x, new_x, prev_y)
-                        self.create_v_tunnel(prev_y, new_y, new_x)
-                    else:
-                        # first move vertically, then horizontally
-                        self.create_v_tunnel(prev_y, new_y, prev_x)
-                        self.create_h_tunnel(prev_x, new_x, new_y)
+            for x in range(min(x1, x2), max(x1, x2) + 1):
+                self.tiles[x][y1].block_sight = False
+                self.tiles[x][y1].blocked = False
+            for y in range(min(y1, y2), max(y1, y2) + 1):
+                self.tiles[max(x1,x2)][y].block_sight = False
+                self.tiles[max(x1,x2)][y].blocked = False
 
-                self.place_entities(new_room, entities)
-                rooms.append(new_room)
-                num_rooms += 1
-
-        stairs_component = Stairs(self.dungeon_level + 1)
-        down_stairs = Entity(last_rm_center_x, last_rm_center_y, '>', libtcod.red, 'Stairs',
-                             render_order=RenderOrder.STAIRS, stairs=stairs_component)
-        entities.append(down_stairs)
-
-    def create_room(self, room):
-        # Makes tiles in rect passable
-        for x in range(room.x1 + 1, room.x2):
-            for y in range(room.y1 + 1, room.y2):
-                self.tiles[x][y].blocked = False
-                self.tiles[x][y].block_sight = False
-
-    def create_h_tunnel(self, x1, x2, y):
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
-
-    def create_v_tunnel(self, y1, y2, x):
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
-
-    def is_blocked(self, x, y):
-        if self.tiles[x][y].blocked:
-            return True
-
-        return False
-
-    def place_entities(self, room, entities):
-        # Handles monster gen
+    def place_bsp_entities(self, node, entities):
+        """Handles monster gen"""
         max_monsters_per_room = from_dungeon_level([[4, 1], [3, 4], [5, 6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
         number_of_monsters = randint(0, max_monsters_per_room)  # Gets rand num of spoopy monsters
@@ -126,8 +117,8 @@ class Map:
         }
 
         for i in range(0,1):
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
+            x = randint(node.x + 1, node.width - 1)
+            y = randint(node.y + 1, node.height - 1)
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 world_obj_comp = Item(use_function=spell_tome)
@@ -138,8 +129,8 @@ class Map:
 
         for i in range(number_of_monsters):
             # Choose random location in the room
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
+            x = randint(node.x + 1, node.width - 1)
+            y = randint(node.y + 1, node.height - 1)
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 # Choose monsters randomly
@@ -165,44 +156,57 @@ class Map:
 
                 entities.append(monster)
 
-        # Handles item gen
-        number_of_items = randint(0, max_items_per_room)
+                # Handles item gen
+            number_of_items = randint(0, max_items_per_room)
 
-        for i in range(number_of_items):
-            x = randint(room.x1 + 1, room.x2 - 1)
-            y = randint(room.y1 + 1, room.y2 - 1)
+            for i in range(number_of_items):
+                x = randint(node.x + 1, node.width - 1)
+                y = randint(node.y + 1, node.height - 1)
 
-            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                item_choice = random_choice_from_dict(item_chances)
-                if item_choice == 'healing_potion':
-                    item_component = Item(use_function=heal, amount=5)
-                    item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
-                                  item=item_component)
+                if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                    item_choice = random_choice_from_dict(item_chances)
+                    if item_choice == 'healing_potion':
+                        item_component = Item(use_function=heal, amount=5)
+                        item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
+                                      item=item_component)
 
-                elif item_choice == 'lightning_scroll':
-                    item_component = Item(use_function=cast_lighting, damage=20, maximum_range=5)
-                    item = Entity(x, y, '~', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
-                                  item=item_component)
+                    elif item_choice == 'lightning_scroll':
+                        item_component = Item(use_function=cast_lighting, damage=20, maximum_range=5)
+                        item = Entity(x, y, '~', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
+                                      item=item_component)
 
-                elif item_choice == 'fireball_scroll':
-                    item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
-                        'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
-                                      damage=15, radius=3)
-                    item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
-                                  item=item_component)
-                elif item_choice == 'wand':
-                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
-                    item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
+                    elif item_choice == 'fireball_scroll':
+                        item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
+                            'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
+                                              damage=15, radius=3)
+                        item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
+                                      item=item_component)
+                    elif item_choice == 'wand':
+                        equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
+                        item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
 
-                entities.append(item)
+                    entities.append(item)
+
+    def node_area_check(self, height, width, wanted_area):
+        """Checks height and width of node against desired area"""
+        area = height * width
+        if area > wanted_area:
+            return True
+
+        return False
+
+    def is_blocked(self, x, y):
+        if self.tiles[x][y].blocked:
+            return True
+
+        return False
 
     def next_floor(self, player, message_log, constants):
         self.dungeon_level += 1
         entities = [player]
 
         self.tiles = self.initialize_tiles()
-        self.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
-                      constants['map_width'], constants['map_height'], player, entities)
+        self.make_BSP_map(player, entities, constants['map_width'], constants['map_height'])
         message_log.add_message(Message('The stairs crumble behind you', libtcod.light_violet))
 
         return entities
