@@ -26,12 +26,12 @@ def get_constant_variables():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 150
+    map_width = 145
     map_height = 75
 
     room_max_size = 12
     room_min_size = 4
-    max_rooms = 15
+    max_rooms = 50
 
     fov_algorithm = 0
     fov_light_walls = True
@@ -75,10 +75,7 @@ def get_game_variables(constant_variables):
 
     # Initializes map
     game_map = Map(constant_variables['map_width'], constant_variables['map_height'])
-    game_map.make_map(constant_variables['max_rooms'], constant_variables['room_min_size'],
-                      constant_variables['room_max_size'], constant_variables['map_width'],
-                      constant_variables['map_height'], player, entities)
-
+    game_map.make_BSP_map(player, entities, constant_variables['map_width'], constant_variables['map_height'])
     # Initializes other game variables
     game_state = GameStates.PLAYERS_TURN
     message_log = MessageLog(constant_variables['message_x'], constant_variables['message_width'],
