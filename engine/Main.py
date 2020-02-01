@@ -139,7 +139,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             start = Message('----Start of Turn----')
             message_log.add_message(start)
 
-            # Regens manna each step
+            # Regens mana each step
             if player.fighter.mana < player.fighter.max_mana:
                 player.fighter.mana += 1
 

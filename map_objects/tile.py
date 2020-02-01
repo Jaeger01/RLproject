@@ -10,4 +10,4 @@ class Tile:
             block_sight = blocked
 
         self.block_sight = block_sight
-        self.explored = False
+        self.explored = True  # controls whether you can see the whole map(unlighted) should be set to false
