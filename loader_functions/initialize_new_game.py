@@ -26,7 +26,7 @@ def get_constant_variables():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 145
+    map_width = 150
     map_height = 75
 
     room_max_size = 12
@@ -62,7 +62,7 @@ def get_constant_variables():
 
 
 def get_game_variables(constant_variables):
-    fighter_component = Fighter(hp=999, armor_class=3, strength=3, intelligence=5)
+    fighter_component = Fighter(hp=100, armor_class=3, strength=3, intelligence=5)
     inventory_component = Inventory(26)
     grimoire_component = Grimoire(5)
     equipment_component = Equipment()

@@ -32,13 +32,15 @@ class Grimoire:
         results = []
 
         spell_component = spell_entity.spell
+        player_mana = kwargs.get('player_mana')
 
-        if spell_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
-            results.append({'targeting': spell_entity})
+        if player_mana >= spell_component.function_kwargs.get('cost'):
+            if spell_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
+                results.append({'targeting': spell_entity})
 
-        else:
-            kwargs = {**spell_component.function_kwargs, **kwargs}
-            spell_cast_results = spell_component.cast_function(self.owner, **kwargs)
-            results.extend(spell_cast_results)
+            else:
+                kwargs = {**spell_component.function_kwargs, **kwargs}
+                spell_cast_results = spell_component.cast_function(self.owner, **kwargs)
+                results.extend(spell_cast_results)
 
         return results

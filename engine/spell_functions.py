@@ -51,7 +51,7 @@ def fireball(*args, **kwargs):
         results.append({'consumed': False, 'message': Message('You cannot see there!', libtcod.yellow)})
         return results
 
-    results.append({'consumed': True, 'message': Message('The fireball explodes buring all within {0} tiles!'
+    results.append({'consumed': True, 'message': Message('The fireball explodes burning all within {0} tiles!'
                                                          .format(radius), libtcod.orange)})
 
     for entity in entites:
@@ -59,6 +59,6 @@ def fireball(*args, **kwargs):
             results.append({'message': Message('The {0} gets burned for {1} hit points!'.format(entity.name, damage),
                                                libtcod.orange)})
             results.extend(entity.fighter.take_damage(damage))
-            results.extend(caster.fighter.reduce_mana(cost))
+    results.extend(caster.fighter.reduce_mana(cost))
 
     return results

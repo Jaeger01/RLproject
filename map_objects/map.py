@@ -105,8 +105,10 @@ class Map:
 
         monster_chances = {
             'ashlee': 45,
-            'orc': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level),
-            'goblin': 60
+            'orc': from_dungeon_level([[45, 3], [55, 5], [65, 7]], self.dungeon_level),
+            'goblin': from_dungeon_level([[60, 3], [40, 5], [20, 7]], self.dungeon_level),
+            'troll': from_dungeon_level([[0, 3], [20, 5], [30, 7]], self.dungeon_level)
+
         }
 
         item_chances = {
@@ -137,7 +139,7 @@ class Map:
                 monster_choice = random_choice_from_dict(monster_chances)
 
                 if monster_choice == 'ashlee':
-                    monster_fight_comp = Fighter(hp=10, armor_class=3, strength=5)
+                    monster_fight_comp = Fighter(hp=10, armor_class=3, strength=6)
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'A', libtcod.purple, "Ashlee", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
@@ -153,9 +155,17 @@ class Map:
                     ai_comp = BasicMonster()
                     monster = Entity(x, y, 'G', libtcod.dark_green, "Goblin", blocks=True, fighter=monster_fight_comp,
                                      render_order=RenderOrder.ACTOR, ai=ai_comp)
+                    
+                elif monster_choice == 'troll':
+                    monster_fight_comp = Fighter(hp=15, armor_class=7, strength=10)
+                    ai_comp = BasicMonster()
+                    monster = Entity(x, y, 'T', libtcod.dark_green, "Troll", blocks=True, fighter=monster_fight_comp,
+                                     render_order=RenderOrder.ACTOR, ai=ai_comp)
 
-                entities.append(monster)
-
+                try:
+                    entities.append(monster)
+                except UnboundLocalError:
+                    pass
                 # Handles item gen
             number_of_items = randint(0, max_items_per_room)
 
@@ -185,7 +195,10 @@ class Map:
                         equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
                         item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
 
-                    entities.append(item)
+                    try:
+                        entities.append(item)
+                    except UnboundLocalError:
+                        pass
 
     def node_area_check(self, height, width, wanted_area):
         """Checks height and width of node against desired area"""

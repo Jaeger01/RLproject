@@ -136,8 +136,6 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         # Does player turn
         player_turn_results = []
         if move and game_state == GameStates.PLAYERS_TURN:
-            start = Message('----Start of Turn----')
-            message_log.add_message(start)
 
             # Regens mana each step
             if player.fighter.mana < player.fighter.max_mana:
@@ -156,7 +154,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                     player.move(moveX, moveY)
                     fov_recompute = True
 
-                game_state = GameStates.ENEMY_TURN
+                game_state = GameStates.ENEMY_TURNv
 
         # Handles pickups
         elif pickup and game_state == GameStates.PLAYERS_TURN:
@@ -171,7 +169,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
         elif wait:
             game_state = GameStates.ENEMY_TURN
-            message_log.add_message(start)
+            # Regens mana each step
+            if player.fighter.mana < player.fighter.max_mana:
+                player.fighter.mana += 1
+
 
         if looking:
             prev_game_state = GameStates.PLAYERS_TURN
@@ -195,8 +196,12 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 player_turn_results.extend(player.inventory.drop_item(item))
 
         if grimoire_index is not None and game_state == GameStates.PLAYERS_TURN:
-            spell = player.grimoire.spells[grimoire_index]
-            player_turn_results.extend(player.grimoire.cast(spell, entities=entities, fov_map=fov_map))
+            try:
+                spell = player.grimoire.spells[grimoire_index]
+            except IndexError:
+                message_log.add_message(Message(('There\'s no spell in that slot'),libtcod.red))
+                continue
+            player_turn_results.extend(player.grimoire.cast(spell, entities=entities, fov_map=fov_map, player_mana = player.fighter.mana))
 
         if game_state == GameStates.TARGETING:
             item_use_results = None
@@ -207,7 +212,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                                                             target_x=target_x, target_y=target_y)
                 elif targeting_item.spell:
                     item_use_results = player.grimoire.cast(targeting_item, entities=entities, fov_map=fov_map,
-                                                            target_x=target_x, target_y=target_y)
+                                                            player_mana=player.fighter.mana, target_x=target_x, target_y=target_y)
 
                 player_turn_results.extend(item_use_results)
             elif right_click:
