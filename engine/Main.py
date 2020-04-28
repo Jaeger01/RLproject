@@ -154,7 +154,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                     player.move(moveX, moveY)
                     fov_recompute = True
 
-                game_state = GameStates.ENEMY_TURNv
+                game_state = GameStates.ENEMY_TURN
 
         # Handles pickups
         elif pickup and game_state == GameStates.PLAYERS_TURN:

@@ -55,14 +55,27 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         libtcod.console_print_ex(panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
         y += 1
 
-
+    # Renders Health bar
     render_bar(panel, 1, 2, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp,
                libtcod.darkest_red, libtcod.darker_red)
+
+    # Prints what depth of the dungeon you're on
     libtcod.console_print_ex(panel, 1, 1, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Floor: {0}'.format(game_map.dungeon_level))
+
+    # Renders current spells in grimoire
+    libtcod.console_print_ex(panel, 75, 0, libtcod.BKGND_NONE, libtcod.LEFT,"Known Spells")
+    current_spell_text_height= 1
+    for spell in player.grimoire.spells:
+        libtcod.console_print_ex(panel, 75, current_spell_text_height, libtcod.BKGND_NONE, libtcod.LEFT,
+                                 "{0}:{1}".format(current_spell_text_height, spell.name))
+        current_spell_text_height += 1
+
+    # Renders Mana bar
     render_bar(panel, 1, 3, bar_width, 'MANA', player.fighter.mana, player.fighter.max_mana,
                libtcod.darkest_blue, libtcod.darkest_blue)
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
+
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:
@@ -102,6 +115,7 @@ def clear_entity(console, entity):
 
 # Fov functions
 def initialize_fov(map):
+
     fov_map = libtcod.map_new(map.width, map.height)
 
     for y in range(map.height):
@@ -112,6 +126,7 @@ def initialize_fov(map):
 
 
 def recompute_fov(fov_map, x, y, radius, light_walls=True, algorithm=0):
+    """Recomputes field of vision"""
     libtcod.map_compute_fov(fov_map, x, y, radius, light_walls, algorithm)
 
 
@@ -128,6 +143,7 @@ def render_bar(panel, x, y, total_width, name, value, max, bar_color, back_color
     libtcod.console_set_default_foreground(panel, libtcod.white) # panel.height - 1
     libtcod.console_print_ex(panel, x, y, libtcod.BKGND_NONE, libtcod.LEFT,
                              '{0}:{1}/{2}'.format(name, value, max))
+    # Suppose to render star borders around the menu but it doesnt work quite right
   #  for x_val in range(0, bar_width+1):
   #      libtcod.console_put_char(panel, x_val, 0, '*')
   #  for y_val in range(0, panel.height):
