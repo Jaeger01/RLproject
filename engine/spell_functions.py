@@ -24,10 +24,11 @@ def lightning(*args, **kwargs):
                 closest_dist = distance
 
     if target:
+        total_dmg = damage + caster.fighter.intelligence_mod
+        results.extend(target.fighter.take_damage(total_dmg))
         results.append({'target': target,
                         'message': Message('A lighting bolt strikes the {0} for {1} damage'.format(target.name,
-                                                                                                   damage))})
-        results.extend(target.fighter.take_damage(damage))
+                                                                                                   total_dmg))})
         results.extend(caster.fighter.reduce_mana(cost))
     else:
         results.append({'target': None, 'message': Message('No enemy is close enough', libtcod.red)})
@@ -51,14 +52,15 @@ def fireball(*args, **kwargs):
         results.append({'consumed': False, 'message': Message('You cannot see there!', libtcod.yellow)})
         return results
 
-    results.append({'consumed': True, 'message': Message('The fireball explodes burning all within {0} tiles!'
+    results.append({'message': Message('The fireball explodes burning all within {0} tiles!'
                                                          .format(radius), libtcod.orange)})
 
     for entity in entites:
         if entity.distance(target_x, target_y) <= radius and entity.fighter:
-            results.append({'message': Message('The {0} gets burned for {1} hit points!'.format(entity.name, damage),
+            total_dmg = damage + caster.fighter.intelligence_mod
+            results.extend(entity.fighter.take_damage(total_dmg))
+            results.append({'message': Message('The {0} gets burned for {1} hit points!'.format(entity.name, total_dmg),
                                                libtcod.orange)})
-            results.extend(entity.fighter.take_damage(damage))
     results.extend(caster.fighter.reduce_mana(cost))
 
     return results

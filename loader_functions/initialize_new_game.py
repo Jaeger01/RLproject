@@ -62,15 +62,15 @@ def get_constant_variables():
 
 
 def get_game_variables(constant_variables):
-    fighter_component = Fighter(hp=100, armor_class=3, strength=3, intelligence=5)
+    fighter_component = Fighter(hp=100, armor_class=3, strength=10, intelligence=10)
     inventory_component = Inventory(26)
     grimoire_component = Grimoire(5)
     equipment_component = Equipment()
     player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, grimoire=grimoire_component, equipment=equipment_component)
-    spell_comp = Spell(cast_function=fireball, damage=10 + player.fighter.intelligence_mod, targeting=True, targeting_message=Message('click to target'), radius=3, cost=10)
-    spell2 = Entity(0, 0, '*', libtcod.dark_crimson, 'fireball', spell=spell_comp)
-    player.grimoire.add_spell(spell2)
+    spell_comp = Spell(cast_function=fireball, damage=10, targeting=True, targeting_message=Message('click to target'), radius=3, cost=10)
+    spell = Entity(0, 0, '*', libtcod.dark_crimson, 'Fireball', spell=spell_comp)
+    player.grimoire.add_spell(spell)
     entities = [player]
 
     # Initializes map

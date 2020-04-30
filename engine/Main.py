@@ -246,6 +246,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 save_game(player, entities, game_map, message_log, game_state)
                 return True
 
+        # Handles when players do something
         for player_turn_result in player_turn_results:
             message = player_turn_result.get('message')
             dead_entity = player_turn_result.get('dead')
@@ -282,11 +283,11 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
             if item_dropped:
                 entities.append(item_dropped)
-                game_state == GameStates.ENEMY_TURN
+                game_state = GameStates.ENEMY_TURN
 
             if spell_tome:
-                spell_comp = Spell(cast_function=lightning, damage=15 + player.fighter.intelligence_mod, maximum_range = 5, cost=25)
-                spell = Entity(0, 0, '~', libtcod.dark_yellow, 'lightning', spell=spell_comp)
+                spell_comp = Spell(cast_function=lightning, damage=15, maximum_range = 5, cost=25)
+                spell = Entity(0, 0, '~', libtcod.dark_yellow, 'Lightning', spell=spell_comp)
                 player.grimoire.add_spell(spell)
 
             if spell_added:
