@@ -31,16 +31,16 @@ class Grimoire:
     def cast(self, spell_entity, **kwargs):
         results = []
 
-        spell_component = spell_entity.spell
+        spell = spell_entity
         player_mana = kwargs.get('player_mana')
 
-        if player_mana >= spell_component.function_kwargs.get('cost'):
-            if spell_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
+        if player_mana >= spell.function_kwargs.get('cost'):
+            if spell.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
                 results.append({'targeting': spell_entity})
 
             else:
-                kwargs = {**spell_component.function_kwargs, **kwargs}
-                spell_cast_results = spell_component.cast_function(self.owner, **kwargs)
+                kwargs = {**spell.function_kwargs, **kwargs}
+                spell_cast_results = spell.cast_function(self.owner, **kwargs)
                 results.extend(spell_cast_results)
 
         return results

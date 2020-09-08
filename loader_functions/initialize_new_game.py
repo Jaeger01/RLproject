@@ -68,8 +68,8 @@ def get_game_variables(constant_variables):
     equipment_component = Equipment()
     player = Entity(0, 0, '@', libtcod.red, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, grimoire=grimoire_component, equipment=equipment_component)
-    spell_comp = Spell(cast_function=fireball, damage=10, targeting=True, targeting_message=Message('click to target'), radius=3, cost=10)
-    spell = Entity(0, 0, '*', libtcod.dark_crimson, 'Fireball', spell=spell_comp)
+    spell = Spell(name='Fireball',cast_function=fireball, damage=10, targeting=True, targeting_message=Message('click to target'),
+                  radius=3, cost=10)
     player.grimoire.add_spell(spell)
     entities = [player]
 

@@ -222,7 +222,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 if targeting_item.item:
                     item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
                                                             target_x=target_x, target_y=target_y)
-                elif targeting_item.spell:
+                elif targeting_item.is_spell:
                     item_use_results = player.grimoire.cast(targeting_item, entities=entities, fov_map=fov_map,
                                                             player_mana=player.fighter.mana, target_x=target_x, target_y=target_y)
                     game_state = GameStates.ENEMY_TURN
@@ -300,8 +300,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
             if spell_tome:
                 # Needs to be replaced with function that randomly chooses spells from a list
-                spell_comp = Spell(cast_function=lightning, damage=15, maximum_range=5, cost=20)
-                spell = Entity(0, 0, '~', libtcod.dark_yellow, 'Lightning', spell=spell_comp)
+                spell = Spell(name='Lightning', cast_function=lightning, damage=15, maximum_range=5, cost=20)
                 player.grimoire.add_spell(spell)
 
             if spell_added:
@@ -313,8 +312,8 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 targeting_item = targeting
                 if targeting_item.item:
                     message_log.add_message(targeting_item.item.targeting_message)
-                if targeting_item.spell:
-                    message_log.add_message(targeting_item.spell.targeting_message)
+                if targeting_item.is_spell:
+                    message_log.add_message(targeting_item.targeting_message)
 
             if looked:
                 game_state = prev_game_state
