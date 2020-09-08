@@ -35,7 +35,7 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
                         #libtcod.console_put_char_ex(console, x, y, '#', libtcod.blue, colors.get('dark_wall'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_wall'), libtcod.BKGND_SET)
                     else:
-                        libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
+                        #libtcod.console_put_char_ex(console, x, y, '.', libtcod.blue, colors.get('dark_ground'))
                         libtcod.console_set_char_background(console, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
 
     entities_in_render_order = sorted(entities, key=lambda z: z.render_order.value)
@@ -64,10 +64,10 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
                              'Floor: {0}'.format(game_map.dungeon_level))
 
     # Renders current spells in grimoire
-    libtcod.console_print_ex(panel, 75, 0, libtcod.BKGND_NONE, libtcod.LEFT,"Known Spells")
-    current_spell_text_height= 1
+    libtcod.console_print_ex(panel, 100, 0, libtcod.BKGND_NONE, libtcod.LEFT,"Known Spells")
+    current_spell_text_height = 1
     for spell in player.grimoire.spells:
-        libtcod.console_print_ex(panel, 75, current_spell_text_height, libtcod.BKGND_NONE, libtcod.LEFT,
+        libtcod.console_print_ex(panel, 100, current_spell_text_height, libtcod.BKGND_NONE, libtcod.LEFT,
                                  "{0}:{1}".format(current_spell_text_height, spell.name))
         current_spell_text_height += 1
 
@@ -76,12 +76,11 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
                libtcod.darkest_blue, libtcod.darkest_blue)
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
-
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:
             inventory_title = 'Press the key next to an item to use it.\n'
         else:
-            inventory_title = 'Press the key next to an item to drop it'
+            inventory_title = 'Press the key next to an item to drop it\n'
 
         inventory_menu(console, inventory_title, player, 50, screen_width, screen_height)
 
@@ -90,7 +89,17 @@ def render_all(console, panel, entities, player, fov_map, fov_recompute, message
         for entity in entities:
             if entity.x == x and entity.y == y and libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
                 thing = entity
-                look_menu(console, thing, screen_width, screen_height)
+                try:
+                    look_menu(console, thing, screen_width, screen_height)
+                except KeyError:
+                    pass
+
+    if game_state in (GameStates.SHOW_GRIMOIRE, GameStates.SHOW_SPELL_DESC):
+        if game_state == GameStates.SHOW_GRIMOIRE:
+            grimoire_title = 'Grimoire Pages\n'
+            grimoire_menu(console, grimoire_title, player, 30, screen_width, screen_height)
+        if game_state == GameStates.SHOW_SPELL_DESC:
+            look_menu(console,player.grimoire.spells[player.gix], screen_width, screen_height)
 
 
 def clear_all(console, entities):
@@ -160,5 +169,3 @@ def render_path(con, player, fov_map, target_x, target_y, path_color):
     for x, y in line:
         if libtcod.map_is_in_fov(fov_map, x, y):
             libtcod.console_set_char_background(con, x, y, path_color, libtcod.BKGND_LIGHTEN)
-
-

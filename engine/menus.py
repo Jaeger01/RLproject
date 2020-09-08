@@ -1,14 +1,16 @@
 import tcod as libtcod
+
 from engine.descriptions import *
 import textwrap
 
 
 def menu(con, header, options, width, screen_width, screen_height, borders=False):
-    if len(options) > 26: raise ValueError('Cannot have a menu with more than 26 options.')
+    if len(options) > 26:
+        raise ValueError('Cannot have a menu with more than 26 options.')
 
     # calculate total height for the header (after auto-wrap) and one line per option
     header_height = libtcod.console_get_height_rect(con, 0, 0, width, screen_height, header)
-    height = len(options) + header_height+1
+    height = len(options) + header_height + 1
 
     # create an off-screen console that represents the menu's window
     window = libtcod.console_new(width, height)
@@ -59,19 +61,22 @@ def look_menu(con, thing, screen_width, screen_height):
     libtcod.console_print_rect_ex(window, 1, 1, width, height, libtcod.BKGND_NONE, libtcod.LEFT, thing.name)
     mon_desc = get_monster_desc()
     item_desc = get_item_desc()
-    # menu(con, mon.name, mon_desc.get('ashlee'), 50, screen_width, screen_height)
+    spell_desc = get_spell_desc()
     y = header_height + 1
+
+    # kinda a dumb loop maybe I should just make one big desc list to kill it?
     if thing.item:
         thing_text = item_desc[thing.name]
-    else:
+    elif thing.fighter:
         thing_text = mon_desc[thing.name]
+    elif thing.spell:
+        thing_text = spell_desc[thing.name]
+
     lined_mon_text = textwrap.wrap(thing_text, width - 2)
     for line in lined_mon_text:
         text = line
         libtcod.console_print_ex(window, 1, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
         y += 1
-
-    # libtcod.console_print_ex(window, 1, y, libtcod.BKGND_NONE, libtcod.LEFT, mon_desc[mon.name])
 
     # blit the contents of "window" to the root console
     x = int(screen_width / 2 - width / 2)
@@ -106,6 +111,19 @@ def inventory_menu(con, header, player, inventory_width, screen_width, screen_he
     menu(con, header, options, inventory_width, screen_width, screen_height, True)
 
 
+def grimoire_menu(con, header, player, inventory_width, screen_width, screen_height):
+    # Shows menu of spells currently in grimoire
+    if len(player.grimoire.spells) == 0:
+        options = ['You have no spells in your grimoire']
+    else:
+        options = []
+
+        for spell in player.grimoire.spells:
+            options.append(spell.name)
+
+    menu(con, header, options, inventory_width, screen_width, screen_height, True)
+
+
 def main_menu(con, background_image, screen_width, screen_height):
     libtcod.image_blit_2x(background_image, 0, 0, 0)
 
@@ -115,7 +133,7 @@ def main_menu(con, background_image, screen_width, screen_height):
     # libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE, libtcod.CENTER,
     #                        'By (Your name here)')
 
-    menu(con, '', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
+    menu(con, ' ', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
 
 
 def message_box(con, header, width, screen_width, screen_height):

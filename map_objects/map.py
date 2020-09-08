@@ -28,7 +28,7 @@ class Map:
 
     def make_BSP_map(self, player, entities, map_width, map_height):
         # parameters for BSP splitting
-        depth = 4
+        depth = 5
         min_width = 5
         min_height = 5
         hori_ratio = 1.5
@@ -77,19 +77,26 @@ class Map:
 
         for i in range(len(room_centers)):
             if i == 0:
-                player.x , player.y = room_centers[i]
+                player.x, player.y = room_centers[i]
+                # Spawning flavor text obelisk next to player
+                obelisk_fight_comp = Fighter(hp=9999, armor_class=9999)
+                start_obelisk = Entity(player.x-1, player.y, ')', libtcod.gold, 'Obelisk of the Start', blocks=True,
+                                       render_order=RenderOrder.ACTOR, fighter=obelisk_fight_comp, ai=WordBlock())
+                entities.append(start_obelisk)
 
+            # Spawns stairs in a random room center
             s = randint(1, len(room_centers))
             if s == i:
                 s_center_x, s_center_y = room_centers[s]
                 stairs_component = Stairs(self.dungeon_level + 1)
-                down_stairs = Entity(s_center_x, s_center_y , '>', libtcod.red, 'Stairs',
+                down_stairs = Entity(s_center_x, s_center_y, '>', libtcod.red, 'Stairs',
                                      render_order=RenderOrder.STAIRS, stairs=stairs_component)
                 entities.append(down_stairs)
 
             x1, y1 = room_centers[i-1]
             x2, y2 = room_centers[i]
 
+            # Makes rooms visible and walk through able
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 self.tiles[x][y1].block_sight = False
                 self.tiles[x][y1].blocked = False
@@ -99,35 +106,58 @@ class Map:
 
     def place_bsp_entities(self, node, entities):
         """Handles monster gen"""
-        max_monsters_per_room = from_dungeon_level([[4, 1], [3, 4], [5, 6]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[5, 1], [7, 4], [9, 6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
         number_of_monsters = randint(0, max_monsters_per_room)  # Gets rand num of spoopy monsters
+        max_objects_per_room = from_dungeon_level([[1,1]], self.dungeon_level)
+        number_of_objects = randint(0, max_objects_per_room)
 
+        # Tables for spawn chances
         monster_chances = {
-            'ashlee': 45,
-            'orc': from_dungeon_level([[45, 3], [55, 5], [65, 7]], self.dungeon_level),
-            'goblin': from_dungeon_level([[60, 3], [40, 5], [20, 7]], self.dungeon_level),
-            'troll': from_dungeon_level([[0, 3], [20, 5], [30, 7]], self.dungeon_level)
+            'ashlee': from_dungeon_level([[1, 1]], self.dungeon_level),
+            'orc': from_dungeon_level([[15, 1], [35, 3], [65, 5]], self.dungeon_level),
+            'goblin': from_dungeon_level([[60, 1], [40, 3], [20, 5]], self.dungeon_level),
+            'troll': from_dungeon_level([[30, 3], [40, 5]], self.dungeon_level)
 
         }
 
         item_chances = {
-            'healing_potion': from_dungeon_level([[25, 4]], self.dungeon_level),
-            'lighting_scroll': from_dungeon_level([[25, 3]], self.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[25, 2]], self.dungeon_level),
-            'wand': from_dungeon_level([[15, 1]], self.dungeon_level)
+            'healing_potion': from_dungeon_level([[25, 1]], self.dungeon_level),
+            #'lighting_scroll': from_dungeon_level([[25, 3]], self.dungeon_level),
+            #'fireball_scroll': from_dungeon_level([[25, 2]], self.dungeon_level),
+            'wand': from_dungeon_level([[20, 1]], self.dungeon_level),
+            'wooden_club': from_dungeon_level([[20,1]], self.dungeon_level),
+            'simple_robes': from_dungeon_level([[90,1]],self.dungeon_level),
+            'vine_mail': from_dungeon_level([[90, 1]], self.dungeon_level)
         }
 
-        for i in range(0,1):
+        object_chances = {
+            'grimoire': from_dungeon_level([[10,4]], self.dungeon_level),
+            'word_chunk': from_dungeon_level([[5,1]],self.dungeon_level)
+        }
+
+        for i in range(number_of_objects):
+            # Choose random location in the room
             x = randint(node.x + 1, node.width - 1)
             y = randint(node.y + 1, node.height - 1)
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                world_obj_comp = Item(use_function=spell_tome)
-                world_objects = Entity(x, y, '$', libtcod.dark_flame, 'spell_tome', render_order=RenderOrder.ITEM,
-                                       item=world_obj_comp, interactable=True)
+                # Choose objects randomly
+                object_choice = random_choice_from_dict(object_chances)
+                if object_choice == 'word_chunk':
+                    obelisk_fight_comp = Fighter(hp=9999, armor_class=9999)
+                    world_object = Entity(x, y, ')', libtcod.gold, 'Obelisk', blocks=True,render_order=RenderOrder.ACTOR
+                                          ,fighter=obelisk_fight_comp, ai=WordBlock())
 
-                entities.append(world_objects)
+                if object_choice == 'grimoire':
+                    world_obj_comp = Item(use_function=spell_tome)
+                    world_object = Entity(x, y, '$', libtcod.dark_flame, 'spell_tome', render_order=RenderOrder.ITEM,
+                                                 item=world_obj_comp, interactable=True)
+
+                try:
+                    entities.append(world_object)
+                except UnboundLocalError:
+                    pass
 
         for i in range(number_of_monsters):
             # Choose random location in the room
@@ -139,66 +169,65 @@ class Map:
                 monster_choice = random_choice_from_dict(monster_chances)
 
                 if monster_choice == 'ashlee':
-                    monster_fight_comp = Fighter(hp=10, armor_class=3, strength=6)
-                    ai_comp = BasicMonster()
+                    monster_fight_comp = Fighter(hp=10, armor_class=7, strength=12)
                     monster = Entity(x, y, 'A', libtcod.purple, "Ashlee", blocks=True, fighter=monster_fight_comp,
-                                     render_order=RenderOrder.ACTOR, ai=ai_comp)
+                                     render_order=RenderOrder.ACTOR, ai=BasicMonster())
 
                 elif monster_choice == 'orc':
-                    monster_fight_comp = Fighter(hp=10, armor_class=4, strength=5)
-                    ai_comp = BasicMonster()
+                    monster_fight_comp = Fighter(hp=15, armor_class=6, strength=10)
                     monster = Entity(x, y, 'O', libtcod.darkest_green, "Orc", blocks=True, fighter=monster_fight_comp,
-                                     render_order=RenderOrder.ACTOR, ai=ai_comp)
+                                     render_order=RenderOrder.ACTOR, ai=BasicMonster())
 
                 elif monster_choice == 'goblin':
-                    monster_fight_comp = Fighter(hp=10, armor_class=2, strength=2)
-                    ai_comp = BasicMonster()
+                    monster_fight_comp = Fighter(hp=7, armor_class=4, strength=4)
                     monster = Entity(x, y, 'G', libtcod.dark_green, "Goblin", blocks=True, fighter=monster_fight_comp,
-                                     render_order=RenderOrder.ACTOR, ai=ai_comp)
+                                     render_order=RenderOrder.ACTOR, ai=BasicMonster())
                     
                 elif monster_choice == 'troll':
-                    monster_fight_comp = Fighter(hp=15, armor_class=7, strength=10)
-                    ai_comp = BasicMonster()
+                    monster_fight_comp = Fighter(hp=20, armor_class=8, strength=16)
                     monster = Entity(x, y, 'T', libtcod.dark_green, "Troll", blocks=True, fighter=monster_fight_comp,
-                                     render_order=RenderOrder.ACTOR, ai=ai_comp)
+                                     render_order=RenderOrder.ACTOR, ai=BasicMonster())
 
                 try:
                     entities.append(monster)
                 except UnboundLocalError:
                     pass
-                # Handles item gen
-            number_of_items = randint(0, max_items_per_room)
 
-            for i in range(number_of_items):
-                x = randint(node.x + 1, node.width - 1)
-                y = randint(node.y + 1, node.height - 1)
+        # Handles item gen
+        number_of_items = randint(0, max_items_per_room)
 
-                if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                    item_choice = random_choice_from_dict(item_chances)
-                    if item_choice == 'healing_potion':
-                        item_component = Item(use_function=heal, amount=5)
-                        item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
-                                      item=item_component)
+        for i in range(number_of_items):
+            x = randint(node.x + 1, node.width - 1)
+            y = randint(node.y + 1, node.height - 1)
 
-                    elif item_choice == 'lightning_scroll':
-                        item_component = Item(use_function=cast_lighting, damage=20, maximum_range=5)
-                        item = Entity(x, y, '~', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM,
-                                      item=item_component)
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                item_choice = random_choice_from_dict(item_chances)
+                if item_choice == 'healing_potion':
+                    item_component = Item(use_function=heal, amount=15)
+                    item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
+                                  item=item_component)
 
-                    elif item_choice == 'fireball_scroll':
-                        item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
-                            'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
-                                              damage=15, radius=3)
-                        item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
-                                      item=item_component)
-                    elif item_choice == 'wand':
-                        equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
-                        item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
+                elif item_choice == 'wooden_club':
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, strength_bonus=3)
+                    item = Entity(x, y, '\\', libtcod.brass, 'Wooden Club', render_order=RenderOrder.ITEM,
+                                    equippable=equippable_component)
+                elif item_choice == 'wand':
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, intelligence_bonus=3)
+                    item = Entity(x, y, '/', libtcod.red, 'Wand', equippable=equippable_component)
 
-                    try:
-                        entities.append(item)
-                    except UnboundLocalError:
-                        pass
+                elif item_choice == 'simple_robes':
+                    equippable_component = Equippable(EquipmentSlots.BODY, intelligence_bonus=3, armor_bonus=1)
+                    item = Entity(x,y, '#', libtcod.purple, 'Simple Robes', equippable=equippable_component)
+
+                elif item_choice == 'vine_mail':
+                    equippable_component = Equippable(EquipmentSlots.BODY, strength_bonus=3, armor_bonus= 3)
+                    item = Entity(x, y, '#', libtcod.dark_green, 'Vine Mail', render_order=RenderOrder.ITEM,
+                                  equippable=equippable_component)
+
+                try:
+                    entities.append(item)
+                except UnboundLocalError:
+                    pass
 
     def node_area_check(self, height, width, wanted_area):
         """Checks height and width of node against desired area"""

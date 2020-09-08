@@ -11,7 +11,7 @@ class Entity:
     Object representing players, monsters, items, etc.
     """
 
-    def __init__(self, x, y, char, color, name, steps=0, blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
+    def __init__(self, x, y, char, color, name, steps=0, gix=1, blocks=False, render_order=RenderOrder.CORPSE, fighter=None,
                  inventory=None, item=None, ai=None, stairs=None, equipment=None, equippable=None, grimoire=None,
                  spell=None, interactable=False, world_object=False):
         self.x = x
@@ -31,6 +31,7 @@ class Entity:
         self.grimoire = grimoire
         self.spell = spell
         self.steps = steps
+        self.gix = 1 # This should be erased only here because I can't figure out how else to pass Grimoire menu index to render functions
         self.interactable = interactable
         self.world_object = world_object
 

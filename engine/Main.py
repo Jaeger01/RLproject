@@ -28,7 +28,7 @@ def main():
     show_main_menu = True
     show_load_error_message = False
 
-    main_menu_background_image = libtcod.image_load('menu_background.png')
+    main_menu_background_image = libtcod.image_load('background.png')
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -123,6 +123,8 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
         inventory_index = action.get('inventory_index')
         grimoire_index = action.get('grimoire_index')
         drop_inventory = action.get('drop_inventory')
+        show_grimoire = action.get('show_grimoire')
+        grimoire_menu_index = action.get('grimoire_menu_index')
         take_stairs = action.get('take_stairs')
         looking = action.get('looking')
         interacting = action.get('interact')
@@ -173,7 +175,6 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             if player.fighter.mana < player.fighter.max_mana:
                 player.fighter.mana += 1
 
-
         if looking:
             prev_game_state = GameStates.PLAYERS_TURN
             game_state = GameStates.LOOK
@@ -195,13 +196,24 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
 
+        if show_grimoire:
+            prev_game_state = game_state
+            game_state = GameStates.SHOW_GRIMOIRE
+
+        # need to be able to select spell and see it's details
+        if grimoire_menu_index is not None and prev_game_state != GameStates.PLAYER_DEAD:
+            # Code to display the spell's desc
+            player.gix = grimoire_menu_index ## Dumb, should figure out way to get this to render functions without doing this
+            game_state = GameStates.SHOW_SPELL_DESC
+
         if grimoire_index is not None and game_state == GameStates.PLAYERS_TURN:
             try:
                 spell = player.grimoire.spells[grimoire_index]
             except IndexError:
-                message_log.add_message(Message(('There\'s no spell in that slot'),libtcod.red))
+                message_log.add_message(Message('There\'s no spell in that slot', libtcod.red))
                 continue
             player_turn_results.extend(player.grimoire.cast(spell, entities=entities, fov_map=fov_map, player_mana = player.fighter.mana))
+            game_state = GameStates.ENEMY_TURN
 
         if game_state == GameStates.TARGETING:
             item_use_results = None
@@ -213,6 +225,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 elif targeting_item.spell:
                     item_use_results = player.grimoire.cast(targeting_item, entities=entities, fov_map=fov_map,
                                                             player_mana=player.fighter.mana, target_x=target_x, target_y=target_y)
+                    game_state = GameStates.ENEMY_TURN
 
                 player_turn_results.extend(item_use_results)
             elif right_click:
@@ -234,11 +247,10 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                         pickup_results = player.inventory.add_item(entity)
                         player_turn_results.extend(pickup_results)
 
-
-
         # Exits if exit
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.LOOK):
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.LOOK,
+                              GameStates.SHOW_GRIMOIRE, GameStates.SHOW_SPELL_DESC):
                 game_state = prev_game_state
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -264,6 +276,7 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
 
             if targeting_cancelled:
                 game_state = prev_game_state
+                message_log.add_message(Message('Targeting cancelled'))
 
             if dead_entity:
                 if dead_entity == player:
@@ -286,7 +299,8 @@ def play_game(player, entities, game_map, message_log, game_state, main_console,
                 game_state = GameStates.ENEMY_TURN
 
             if spell_tome:
-                spell_comp = Spell(cast_function=lightning, damage=15, maximum_range = 5, cost=25)
+                # Needs to be replaced with function that randomly chooses spells from a list
+                spell_comp = Spell(cast_function=lightning, damage=15, maximum_range=5, cost=20)
                 spell = Entity(0, 0, '~', libtcod.dark_yellow, 'Lightning', spell=spell_comp)
                 player.grimoire.add_spell(spell)
 

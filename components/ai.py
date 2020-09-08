@@ -25,3 +25,10 @@ class BasicMonster:
         return results
 
 
+class WordBlock:
+    """Word blocks exist to be mouse over lore texts this 'monster' is inanimate"""
+    def take_turn(self, target, fov_map, game_map, entities):
+        results = []
+        return results
+
+

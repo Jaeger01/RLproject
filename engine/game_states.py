@@ -9,5 +9,7 @@ class GameStates(Enum):
     DROP_INVENTORY = 5
     TARGETING = 6
     LOOK = 7
+    SHOW_GRIMOIRE = 8
+    SHOW_SPELL_DESC = 9
 
 

@@ -14,6 +14,8 @@ def handle_keys(key, game_state):
         return handle_player_dead(key)
     elif game_state == GameStates.LOOK:
         return handle_look_menu(key)
+    elif game_state in (GameStates.SHOW_GRIMOIRE, GameStates.SHOW_SPELL_DESC):
+        return handle_grimoire_menu(key)
 
     return {}
 
@@ -71,6 +73,9 @@ def handle_player_turn(key):
 
     if key_char == 'e':
         return {'interact': True}
+
+    if key_char == 'q':
+        return {'show_grimoire': True}
 
     # Grimoire handling
     if key.vk == libtcod.KEY_1:
@@ -158,5 +163,17 @@ def handle_inventory(key):
     if key.vk == libtcod.KEY_ESCAPE:
         # Exit
         return{'exit': True}
+
+    return {}
+
+
+def handle_grimoire_menu(key):
+    index = key.c - ord('a')
+
+    if index >= 0:
+        return {'grimoire_menu_index': index}
+
+    if key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
 
     return {}

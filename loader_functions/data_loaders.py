@@ -12,7 +12,7 @@ def save_game(player, entities, game_map, message_log, game_state):
 
 
 def load_game():
-    if not os.path.isfile('Savegame'):
+    if not os.path.isfile('Savegame.dat'):
         raise FileNotFoundError
 
     with shelve.open('Savegame', 'r') as data_file:
@@ -21,7 +21,6 @@ def load_game():
         game_map = data_file['game_map']
         message_log = data_file['message_log']
         game_state = data_file['game_state']
-
         player = entities[player_index]
 
         return player, entities, game_map, message_log, game_state
